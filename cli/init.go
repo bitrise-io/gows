@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitrise-tools/gows/config"
 	"github.com/bitrise-tools/gows/gows"
 	"github.com/urfave/cli"
 )
@@ -24,9 +25,17 @@ func initCmd(c *cli.Context) error {
 			return errors.New("Empty package name scanned")
 		}
 		packageName = scanRes
+		log.Infof(" Scanned package name: %s", packageName)
 	} else {
 		packageName = c.Args()[0]
 	}
 
-	return gows.Init(packageName)
+	if err := gows.Init(packageName); err != nil {
+		return err
+	}
+
+	log.Info("Successful init - gows is ready for use!")
+	log.Infof(" Note: you should add %s to your .gitignore", config.WorkspaceConfigFilePath)
+
+	return nil
 }

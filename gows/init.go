@@ -16,12 +16,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const (
-	userConfigFilePath       = "./gows-config.yml"
-	workspaceConfigFilePath  = "./.gows"
-	gowsWorspacesRootDirPath = "$HOME/.bitrise-gows/workspaces"
-)
-
 func parsePackageNameFromURL(remoteURL string) (string, error) {
 	origRemoteURL := remoteURL
 	if strings.HasPrefix(remoteURL, "git@") {
@@ -71,8 +65,9 @@ func AutoScanPackageName() (string, error) {
 	}
 
 	outStr := string(out)
-	log.Debugf("Found Git Remote: %s", outStr)
-	packageName, err := parsePackageNameFromURL(strings.TrimSpace(outStr))
+	gitRemoteStr := strings.TrimSpace(outStr)
+	log.Debugf("Found Git Remote: %s", gitRemoteStr)
+	packageName, err := parsePackageNameFromURL(gitRemoteStr)
 	if err != nil {
 		return "", fmt.Errorf("Failed to parse package name from remote URL (%s), error: %s", outStr, err)
 	}
@@ -111,19 +106,20 @@ func Init(packageName string) error {
 			return err
 		}
 
-		err = fileutil.WriteBytesToFile(userConfigFilePath, bytes)
+		err = fileutil.WriteBytesToFile(config.UserConfigFilePath, bytes)
 		if err != nil {
-			return fmt.Errorf("Failed to write User Config into file (%s), error: %s", userConfigFilePath, err)
+			return fmt.Errorf("Failed to write User Config into file (%s), error: %s", config.UserConfigFilePath, err)
 		}
 	}
 
-	log.Debugf("[Init] User Config saved to file: %s", userConfigFilePath)
+	log.Debugf("[Init] User Config saved to file: %s", config.UserConfigFilePath)
 
 	// Workspace Config
 	log.Debug("[Init] Initializing Workspace & Config ...")
-	gowsWorspacesRootDirAbsPath, err := pathutil.AbsPath(gowsWorspacesRootDirPath)
+	// Create the Workspace
+	gowsWorspacesRootDirAbsPath, err := pathutil.AbsPath(config.GOWSWorspacesRootDirPath)
 	if err != nil {
-		return fmt.Errorf("Failed to get absolute path for gows workspaces root dir (%s), error: %s", gowsWorspacesRootDirPath, err)
+		return fmt.Errorf("Failed to get absolute path for gows workspaces root dir (%s), error: %s", config.GOWSWorspacesRootDirPath, err)
 	}
 	currWorkDir, err := os.Getwd()
 	if err != nil {
@@ -137,6 +133,7 @@ func Init(packageName string) error {
 	}
 	log.Debugf("  Workspace successfully created")
 
+	// Save the location into Workspace config
 	{
 		workspaceConf := config.WorkspaceConfigModel{
 			WorkspaceRootPath: projectWorkspaceAbsPath,
@@ -147,12 +144,12 @@ func Init(packageName string) error {
 			return err
 		}
 
-		err = fileutil.WriteBytesToFile(workspaceConfigFilePath, bytes)
+		err = fileutil.WriteBytesToFile(config.WorkspaceConfigFilePath, bytes)
 		if err != nil {
-			return fmt.Errorf("Failed to write Workspace Config into file (%s), error: %s", workspaceConfigFilePath, err)
+			return fmt.Errorf("Failed to write Workspace Config into file (%s), error: %s", config.WorkspaceConfigFilePath, err)
 		}
 	}
-	log.Debugf("[Init] Workspace Config saved to file: %s", workspaceConfigFilePath)
+	log.Debugf("[Init] Workspace Config saved to file: %s", config.WorkspaceConfigFilePath)
 
 	return nil
 }
