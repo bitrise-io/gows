@@ -3,17 +3,23 @@ package gows
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/fileutil"
+	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-tools/gows/config"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	userConfigFilePath = "./gows.yml"
+	userConfigFilePath       = "./gows-config.yml"
+	workspaceConfigFilePath  = "./.gows"
+	gowsWorspacesRootDirPath = "$HOME/.bitrise-gows/workspaces"
 )
 
 func parsePackageNameFromURL(remoteURL string) (string, error) {
@@ -77,24 +83,76 @@ func AutoScanPackageName() (string, error) {
 	return packageName, nil
 }
 
+func initGoWorkspaceAtPath(wsRootPath string) error {
+	if err := os.MkdirAll(filepath.Join(wsRootPath, "src"), 0777); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Join(wsRootPath, "bin"), 0777); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Join(wsRootPath, "pkg"), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Init ...
 func Init(packageName string) error {
 	log.Debugf("[Init] Initializing package: %s", packageName)
-	userConf := config.UserConfigModel{
-		PackageName: packageName,
-	}
 
-	bytes, err := yaml.Marshal(userConf)
-	if err != nil {
-		return err
-	}
+	log.Debug("[Init] Initializing User Config ...")
+	{
+		userConf := config.UserConfigModel{
+			PackageName: packageName,
+		}
 
-	err = fileutil.WriteBytesToFile(userConfigFilePath, bytes)
-	if err != nil {
-		return fmt.Errorf("Failed to write User Config into file (%s), error: %s", userConfigFilePath, err)
+		bytes, err := yaml.Marshal(userConf)
+		if err != nil {
+			return err
+		}
+
+		err = fileutil.WriteBytesToFile(userConfigFilePath, bytes)
+		if err != nil {
+			return fmt.Errorf("Failed to write User Config into file (%s), error: %s", userConfigFilePath, err)
+		}
 	}
 
 	log.Debugf("[Init] User Config saved to file: %s", userConfigFilePath)
+
+	// Workspace Config
+	log.Debug("[Init] Initializing Workspace & Config ...")
+	gowsWorspacesRootDirAbsPath, err := pathutil.AbsPath(gowsWorspacesRootDirPath)
+	if err != nil {
+		return fmt.Errorf("Failed to get absolute path for gows workspaces root dir (%s), error: %s", gowsWorspacesRootDirPath, err)
+	}
+	currWorkDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("Failed to get current working directory: %s", err)
+	}
+	projectBaseWorkspaceDirName := fmt.Sprintf("%s-%d", filepath.Base(currWorkDir), time.Now().Unix())
+	projectWorkspaceAbsPath := filepath.Join(gowsWorspacesRootDirAbsPath, projectBaseWorkspaceDirName)
+	log.Debugf("  projectWorkspaceAbsPath: %s", projectWorkspaceAbsPath)
+	if err := initGoWorkspaceAtPath(projectWorkspaceAbsPath); err != nil {
+		return fmt.Errorf("Failed to initialize workspace at path: %s", projectWorkspaceAbsPath)
+	}
+	log.Debugf("  Workspace successfully created")
+
+	{
+		workspaceConf := config.WorkspaceConfigModel{
+			WorkspaceRootPath: projectWorkspaceAbsPath,
+		}
+
+		bytes, err := yaml.Marshal(workspaceConf)
+		if err != nil {
+			return err
+		}
+
+		err = fileutil.WriteBytesToFile(workspaceConfigFilePath, bytes)
+		if err != nil {
+			return fmt.Errorf("Failed to write Workspace Config into file (%s), error: %s", workspaceConfigFilePath, err)
+		}
+	}
+	log.Debugf("[Init] Workspace Config saved to file: %s", workspaceConfigFilePath)
 
 	return nil
 }
