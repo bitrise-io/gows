@@ -7,7 +7,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-tools/gows/version"
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 )
 
 func before(c *cli.Context) error {
@@ -42,7 +42,23 @@ func Run() {
 	app.Flags = appFlags
 	app.Commands = commands
 
+	app.Action = func(c *cli.Context) error {
+		cmdName := c.Args()[0]
+		cmdArgs := []string{}
+		if len(c.Args()) > 1 {
+			cmdArgs = c.Args()[1:]
+		}
+		exitCode, err := RunCommand(cmdName, cmdArgs...)
+		if exitCode != 0 {
+			return cli.NewExitError("", exitCode)
+		}
+		if err != nil {
+			return fmt.Errorf("Exit Code was 0, but an error happened: %s", err)
+		}
+		return nil
+	}
+
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal("Finished with error:", err)
+		log.Fatalf("Error: %s", err)
 	}
 }

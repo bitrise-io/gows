@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bitrise-tools/gows/version"
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 )
 
 func versionCmd(c *cli.Context) error {
