@@ -5,14 +5,15 @@ Go Workspace / Environment Manager, to easily manage the Go Workspace during dev
 
 ## The idea
 
-Work in isolated development environment when you're working on your Go projects.
-No cross-project dependency version missmatch, no more packages left out from `vendor/`.
+Work in **isolated (development) environment** when you're working on your Go projects.
+**No cross-project dependency version missmatch**, no more packages left out from `vendor/`.
 
-No need for initializing a go workspace either, your project can be located anywhere,
+No need for initializing a go workspace either, **your project can be located anywhere**,
+not just in a predefined `$GOPATH` workspace.
 `gows` will take care about crearing the (per-project isolated) workspace directory
 structure, no matter where your project is located.
 
-`gows` works perfectly with other Go tools, all it does is it ensures
+`gows` **works perfectly with other Go tools**, all it does is it ensures
 that every project gets it's own, isolated Go workspace and sets `$GOPATH`
 accordingly.
 
