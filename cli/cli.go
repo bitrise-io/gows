@@ -6,6 +6,7 @@ import (
 	"path"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitrise-tools/gows/gows"
 	"github.com/bitrise-tools/gows/version"
 	"github.com/urfave/cli"
 )
@@ -48,7 +49,7 @@ func Run() {
 		if len(c.Args()) > 1 {
 			cmdArgs = c.Args()[1:]
 		}
-		exitCode, err := RunCommand(cmdName, cmdArgs...)
+		exitCode, err := gows.RunCommand(cmdName, cmdArgs...)
 		if exitCode != 0 {
 			return cli.NewExitError("", exitCode)
 		}

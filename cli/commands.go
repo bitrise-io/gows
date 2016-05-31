@@ -32,6 +32,11 @@ var (
 			Usage:  "Version",
 			Action: versionCmd,
 		},
+		{
+			Name:   "init",
+			Usage:  "Initialize gows for your Go project",
+			Action: initCmd,
+		},
 	}
 
 	appFlags = []cli.Flag{
