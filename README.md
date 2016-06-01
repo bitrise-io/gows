@@ -37,6 +37,34 @@ if you just added this line to the profile file).
 window, without the need to type in the full path of the binary.*
 
 
+**Allow GOPATH to be overwritten by `gows` for "shell jump in" (see the "Jump into a prepared Shell" section)**:
+To allow `gows` to overwrite the GOPATH for shells initialized **by/through** `gows` you should
+change your `GOPATH` entry in your `~/.bash_profile` / `~/.bashrc` (or wherever you did set GOPATH for your
+shell). For Bash (`~/.bash_profile` / `~/.bashrc`) you can use this form:
+
+Instead of:
+
+```
+export GOPATH="/my/go/path"
+```
+
+Use something like this:
+
+```
+if [ -z "$GOPATH" ] ; then
+  export GOPATH="/my/go/path"
+fi
+```
+
+This means that your (Bash) shell will only set the `GOPATH` environment if it's not set to a value already, if it's
+empty.
+
+This is not required if you use `gows` only in a "single command" style, it's only required if you want to initialize
+the shell and jump into the initialized shell through `gows`. In general it's safe to initialize the
+environment variable this way even if you don't plan to initialize any shell through `gows`,
+as this will always initialize `GOPATH` *unless* it's already initialized (e.g. by an outer shell).
+
+
 ### Install `gows`
 
 ```
