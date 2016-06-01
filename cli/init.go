@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/bitrise-tools/gows/config"
 	"github.com/bitrise-tools/gows/gows"
 	"github.com/urfave/cli"
 )
@@ -35,7 +34,6 @@ func initCmd(c *cli.Context) error {
 	}
 
 	log.Info("Successful init - gows is ready for use!")
-	log.Infof(" Note: you should add %s to your .gitignore", config.WorkspaceConfigFilePath)
 
 	return nil
 }

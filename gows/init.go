@@ -11,7 +11,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/fileutil"
-	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-tools/gows/config"
 	"gopkg.in/yaml.v2"
 )
@@ -95,6 +94,11 @@ func initGoWorkspaceAtPath(wsRootPath string) error {
 func Init(packageName string) error {
 	log.Debugf("[Init] Initializing package: %s", packageName)
 
+	gowsConfig, err := config.LoadGOWSConfigFromFile()
+	if err != nil {
+		return err
+	}
+
 	log.Debug("[Init] Initializing User Config ...")
 	{
 		userConf := config.UserConfigModel{
@@ -117,9 +121,9 @@ func Init(packageName string) error {
 	// Workspace Config
 	log.Debug("[Init] Initializing Workspace & Config ...")
 	// Create the Workspace
-	gowsWorspacesRootDirAbsPath, err := pathutil.AbsPath(config.GOWSWorspacesRootDirPath)
+	gowsWorspacesRootDirAbsPath, err := config.GOWSWorspacesRootDirAbsPath()
 	if err != nil {
-		return fmt.Errorf("Failed to get absolute path for gows workspaces root dir (%s), error: %s", config.GOWSWorspacesRootDirPath, err)
+		return fmt.Errorf("Failed to get absolute path for gows workspaces root dir, error: %s", err)
 	}
 	currWorkDir, err := os.Getwd()
 	if err != nil {
@@ -138,18 +142,13 @@ func Init(packageName string) error {
 		workspaceConf := config.WorkspaceConfigModel{
 			WorkspaceRootPath: projectWorkspaceAbsPath,
 		}
+		gowsConfig.Workspaces[currWorkDir] = workspaceConf
 
-		bytes, err := yaml.Marshal(workspaceConf)
-		if err != nil {
+		if err := config.SaveGOWSConfigToFile(gowsConfig); err != nil {
 			return err
 		}
-
-		err = fileutil.WriteBytesToFile(config.WorkspaceConfigFilePath, bytes)
-		if err != nil {
-			return fmt.Errorf("Failed to write Workspace Config into file (%s), error: %s", config.WorkspaceConfigFilePath, err)
-		}
 	}
-	log.Debugf("[Init] Workspace Config saved to file: %s", config.WorkspaceConfigFilePath)
+	log.Debug("[Init] Workspace Config saved")
 
 	return nil
 }
