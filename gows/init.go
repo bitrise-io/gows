@@ -80,12 +80,6 @@ func initGoWorkspaceAtPath(wsRootPath string) error {
 	if err := os.MkdirAll(filepath.Join(wsRootPath, "src"), 0777); err != nil {
 		return fmt.Errorf("Failed to create GOPATH/src directory: %s", err)
 	}
-	if err := os.MkdirAll(filepath.Join(wsRootPath, "bin"), 0777); err != nil {
-		return fmt.Errorf("Failed to create GOPATH/bin directory: %s", err)
-	}
-	if err := os.MkdirAll(filepath.Join(wsRootPath, "pkg"), 0777); err != nil {
-		return fmt.Errorf("Failed to create GOPATH/pkg directory: %s", err)
-	}
 	return nil
 }
 
