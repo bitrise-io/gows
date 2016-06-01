@@ -10,6 +10,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-tools/gows/config"
 	"gopkg.in/yaml.v2"
@@ -145,9 +146,8 @@ func Init(packageName string, isAllowReset bool) error {
 			// init a new one
 			projectWorkspaceAbsPath = ""
 		} else {
-			log.Warningf("A workspace already exists for this project, will be reused.")
-			log.Warningf(`If you want to delete the previous workspace of this project and generate a new one
-you should run: gows init -reset`)
+			log.Warning(colorstring.Yellow("A workspace already exists for this project") + " (" + projectWorkspaceAbsPath + "), will be reused.")
+			log.Warning("If you want to delete the previous workspace of this project and generate a new one you should run: " + colorstring.Green("gows init -reset"))
 		}
 	}
 

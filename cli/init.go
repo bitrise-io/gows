@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-tools/gows/gows"
 	"github.com/urfave/cli"
 )
@@ -31,14 +32,14 @@ func initCmd(c *cli.Context) error {
 
 	isAllowReset := c.Bool(InitResetKey)
 	if isAllowReset {
-		log.Warning("Will reset the related workspace")
+		log.Warning(colorstring.Red("Will reset the related workspace"))
 	}
 
 	if err := gows.Init(packageName, isAllowReset); err != nil {
 		return fmt.Errorf("Failed to initialize: %s", err)
 	}
 
-	log.Info("Successful init - gows is ready for use!")
+	log.Info("Successful init - " + colorstring.Green("gows is ready for use!"))
 
 	return nil
 }
