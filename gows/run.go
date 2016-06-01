@@ -47,7 +47,7 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 
 	// Sync project into workspace
 	log.Debugf("=> Sync project content into workspace: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
-	if err := oneWaySyncDirs(currWorkDir, fullPackageWorkspacePath); err != nil {
+	if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
 		return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
 	}
 	log.Debugf(" [DONE] Sync project content into workspace")
@@ -57,7 +57,7 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 
 	// Sync back from workspace into project
 	log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
-	if err := oneWaySyncDirs(fullPackageWorkspacePath, currWorkDir); err != nil {
+	if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
 		// we should return the command's exit code and error (if any)
 		// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
 		// for now we'll just print an error log, but it won't change the "output" of this function
@@ -69,7 +69,7 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 	return exitCode, cmdErr
 }
 
-func oneWaySyncDirs(syncContentOf, syncIntoDir string) error {
+func syncDirWithDir(syncContentOf, syncIntoDir string) error {
 	syncContentOf = filepath.Clean(syncContentOf)
 	syncIntoDir = filepath.Clean(syncIntoDir)
 
@@ -77,17 +77,17 @@ func oneWaySyncDirs(syncContentOf, syncIntoDir string) error {
 		return fmt.Errorf("Failed to create target (at: %s), error: %s", syncIntoDir, err)
 	}
 
-	cmd := exec.Command("rsync", "-avhP", syncContentOf+"/", syncIntoDir+"/")
+	cmd := exec.Command("rsync", "-avhP", "--delete", syncContentOf+"/", syncIntoDir+"/")
 	cmd.Stdin = os.Stdin
 
 	out, err := cmd.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			log.Error("[oneWaySyncDirs] Sync Error")
-			log.Errorf("[oneWaySyncDirs] Output (Stdout) was: %s", out)
-			log.Errorf("[oneWaySyncDirs] Error Output (Stderr) was: %s", exitError.Stderr)
+			log.Error("[syncDirWithDir] Sync Error")
+			log.Errorf("[syncDirWithDir] Output (Stdout) was: %s", out)
+			log.Errorf("[syncDirWithDir] Error Output (Stderr) was: %s", exitError.Stderr)
 		} else {
-			log.Error("[oneWaySyncDirs] Failed to convert error to ExitError")
+			log.Error("[syncDirWithDir] Failed to convert error to ExitError")
 		}
 		return fmt.Errorf("Failed to rsync between (%s) and (%s), error: %s", syncContentOf, syncIntoDir, err)
 	}
