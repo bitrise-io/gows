@@ -13,6 +13,7 @@ workflows:
             #!/bin/bash
             set -ex
             go get -u github.com/eaburns/Watch
+
   test:
     steps:
     - script:
@@ -21,3 +22,12 @@ workflows:
             #!/bin/bash
             set -ex
             go test ./...
+
+  watch:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            Watch -t -v -p ./ bash -l -c 'go test ./... && go install'
