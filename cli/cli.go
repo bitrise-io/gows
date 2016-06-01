@@ -49,7 +49,7 @@ func Run() {
 		if len(c.Args()) > 1 {
 			cmdArgs = c.Args()[1:]
 		}
-		exitCode, err := gows.RunCommand(cmdName, cmdArgs...)
+		exitCode, err := gows.PrepareEnvironmentAndRunCommand(cmdName, cmdArgs...)
 		if exitCode != 0 {
 			return cli.NewExitError("", exitCode)
 		}

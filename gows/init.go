@@ -11,9 +11,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/colorstring"
-	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-tools/gows/config"
-	"gopkg.in/yaml.v2"
 )
 
 func parsePackageNameFromURL(remoteURL string) (string, error) {
@@ -100,24 +98,18 @@ func Init(packageName string, isAllowReset bool) error {
 		return fmt.Errorf("Failed to load gows config: %s", err)
 	}
 
-	log.Debug("[Init] Initializing User Config ...")
+	log.Debug("[Init] Initializing Project Config ...")
 	{
-		userConf := config.UserConfigModel{
+		projectConf := config.ProjectConfigModel{
 			PackageName: packageName,
 		}
 
-		bytes, err := yaml.Marshal(userConf)
-		if err != nil {
-			return fmt.Errorf("Failed to parse User Config (should be valid YML): %s", err)
-		}
-
-		err = fileutil.WriteBytesToFile(config.UserConfigFilePath, bytes)
-		if err != nil {
-			return fmt.Errorf("Failed to write User Config into file (%s), error: %s", config.UserConfigFilePath, err)
+		if err := config.SaveProjectConfigToFile(projectConf); err != nil {
+			return fmt.Errorf("Failed to write Project Config into file: %s", err)
 		}
 	}
 
-	log.Debugf("[Init] User Config saved to file: %s", config.UserConfigFilePath)
+	log.Debugf("[Init] Project Config saved to file: %s", config.ProjectConfigFilePath)
 
 	// Workspace Config
 	log.Debug("[Init] Initializing Workspace & Config ...")
