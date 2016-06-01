@@ -5,6 +5,14 @@ app:
   envs: []
 
 workflows:
+  install_tools:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            go get -u github.com/eaburns/Watch
   test:
     steps:
     - script:

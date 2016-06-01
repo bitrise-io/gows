@@ -23,6 +23,8 @@ const (
 
 	// --- Command flags
 
+	// InitResetKey ...
+	InitResetKey = "reset"
 )
 
 var (
@@ -36,6 +38,12 @@ var (
 			Name:   "init",
 			Usage:  "Initialize gows for your Go project",
 			Action: initCmd,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  InitResetKey,
+					Usage: "Delete previous workspace (if any) and initialize a new one",
+				},
+			},
 		},
 	}
 

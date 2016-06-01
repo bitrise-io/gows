@@ -29,8 +29,13 @@ func initCmd(c *cli.Context) error {
 		packageName = c.Args()[0]
 	}
 
-	if err := gows.Init(packageName); err != nil {
-		return err
+	isAllowReset := c.Bool(InitResetKey)
+	if isAllowReset {
+		log.Warning("Will reset the related workspace")
+	}
+
+	if err := gows.Init(packageName, isAllowReset); err != nil {
+		return fmt.Errorf("Failed to initialize: %s", err)
 	}
 
 	log.Info("Successful init - gows is ready for use!")

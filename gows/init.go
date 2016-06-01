@@ -79,24 +79,24 @@ func AutoScanPackageName() (string, error) {
 
 func initGoWorkspaceAtPath(wsRootPath string) error {
 	if err := os.MkdirAll(filepath.Join(wsRootPath, "src"), 0777); err != nil {
-		return err
+		return fmt.Errorf("Failed to create GOPATH/src directory: %s", err)
 	}
 	if err := os.MkdirAll(filepath.Join(wsRootPath, "bin"), 0777); err != nil {
-		return err
+		return fmt.Errorf("Failed to create GOPATH/bin directory: %s", err)
 	}
 	if err := os.MkdirAll(filepath.Join(wsRootPath, "pkg"), 0777); err != nil {
-		return err
+		return fmt.Errorf("Failed to create GOPATH/pkg directory: %s", err)
 	}
 	return nil
 }
 
 // Init ...
-func Init(packageName string) error {
+func Init(packageName string, isAllowReset bool) error {
 	log.Debugf("[Init] Initializing package: %s", packageName)
 
 	gowsConfig, err := config.LoadGOWSConfigFromFile()
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to load gows config: %s", err)
 	}
 
 	log.Debug("[Init] Initializing User Config ...")
@@ -107,7 +107,7 @@ func Init(packageName string) error {
 
 		bytes, err := yaml.Marshal(userConf)
 		if err != nil {
-			return err
+			return fmt.Errorf("Failed to parse User Config (should be valid YML): %s", err)
 		}
 
 		err = fileutil.WriteBytesToFile(config.UserConfigFilePath, bytes)
@@ -129,8 +129,34 @@ func Init(packageName string) error {
 	if err != nil {
 		return fmt.Errorf("Failed to get current working directory: %s", err)
 	}
-	projectBaseWorkspaceDirName := fmt.Sprintf("%s-%d", filepath.Base(currWorkDir), time.Now().Unix())
-	projectWorkspaceAbsPath := filepath.Join(gowsWorspacesRootDirAbsPath, projectBaseWorkspaceDirName)
+
+	projectWorkspaceAbsPath := ""
+	wsConfig, isFound := gowsConfig.WorkspaceForProjectLocation(currWorkDir)
+	if isFound {
+		if wsConfig.WorkspaceRootPath == "" {
+			return fmt.Errorf("A workspace is found for this project (path: %s), but the workspace root directory path is not defined!", currWorkDir)
+		}
+		projectWorkspaceAbsPath = wsConfig.WorkspaceRootPath
+
+		if isAllowReset {
+			if err := os.RemoveAll(projectWorkspaceAbsPath); err != nil {
+				return fmt.Errorf("Failed to delete previous workspace at path: %s", projectWorkspaceAbsPath)
+			}
+			// init a new one
+			projectWorkspaceAbsPath = ""
+		} else {
+			log.Warningf("A workspace already exists for this project, will be reused.")
+			log.Warningf(`If you want to delete the previous workspace of this project and generate a new one
+you should run: gows init -reset`)
+		}
+	}
+
+	if projectWorkspaceAbsPath == "" {
+		// generate one
+		projectBaseWorkspaceDirName := fmt.Sprintf("%s-%d", filepath.Base(currWorkDir), time.Now().Unix())
+		projectWorkspaceAbsPath = filepath.Join(gowsWorspacesRootDirAbsPath, projectBaseWorkspaceDirName)
+	}
+
 	log.Debugf("  projectWorkspaceAbsPath: %s", projectWorkspaceAbsPath)
 	if err := initGoWorkspaceAtPath(projectWorkspaceAbsPath); err != nil {
 		return fmt.Errorf("Failed to initialize workspace at path: %s", projectWorkspaceAbsPath)
@@ -145,7 +171,7 @@ func Init(packageName string) error {
 		gowsConfig.Workspaces[currWorkDir] = workspaceConf
 
 		if err := config.SaveGOWSConfigToFile(gowsConfig); err != nil {
-			return err
+			return fmt.Errorf("Failed to save gows config: %s", err)
 		}
 	}
 	log.Debug("[Init] Workspace Config saved")
