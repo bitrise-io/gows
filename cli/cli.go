@@ -44,12 +44,15 @@ func Run() {
 	app.Commands = commands
 
 	app.Action = func(c *cli.Context) error {
+		isSyncBack := c.Bool(SyncBackKey)
+		log.Debug("isSyncBack: ", isSyncBack)
+
 		cmdName := c.Args()[0]
 		cmdArgs := []string{}
 		if len(c.Args()) > 1 {
 			cmdArgs = c.Args()[1:]
 		}
-		exitCode, err := gows.PrepareEnvironmentAndRunCommand(cmdName, cmdArgs...)
+		exitCode, err := gows.PrepareEnvironmentAndRunCommand(isSyncBack, cmdName, cmdArgs...)
 		if exitCode != 0 {
 			return cli.NewExitError("", exitCode)
 		}

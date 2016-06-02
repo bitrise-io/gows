@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
@@ -15,7 +16,7 @@ import (
 
 // PrepareEnvironmentAndRunCommand ...
 // Returns the exit code of the command and any error occured in the function
-func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, error) {
+func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ...string) (int, error) {
 	gowsConfig, err := config.LoadGOWSConfigFromFile()
 	if err != nil {
 		return 0, fmt.Errorf("Failed to read gows configs: %s", err)
@@ -56,14 +57,16 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 	exitCode, cmdErr := runCommand(origGOPATH, fullPackageWorkspacePath, wsConfig, cmdName, cmdArgs...)
 
 	// Sync back from workspace into project
-	log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
-	if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
-		// we should return the command's exit code and error (if any)
-		// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
-		// for now we'll just print an error log, but it won't change the "output" of this function
-		log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
-	} else {
-		log.Debugf(" [DONE] Sync back project content from workspace")
+	if isSyncBack {
+		log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
+		if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
+			// we should return the command's exit code and error (if any)
+			// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
+			// for now we'll just print an error log, but it won't change the "output" of this function
+			log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
+		} else {
+			log.Debugf(" [DONE] Sync back project content from workspace")
+		}
 	}
 
 	return exitCode, cmdErr
@@ -154,6 +157,17 @@ func prepareGoWorkspaceEnvironment(origGOPATH, currWorkDir string, wsConfig conf
 	return fullPackageWorkspacePath, nil
 }
 
+func filteredEnvsList(envsList []string, ignoreEnv string) []string {
+	filteredEnvs := []string{}
+	for _, envItem := range envsList {
+		// an env item is a single string with the syntax: key=the value
+		if !strings.HasPrefix(envItem, fmt.Sprintf("%s=", ignoreEnv)) {
+			filteredEnvs = append(filteredEnvs, envItem)
+		}
+	}
+	return filteredEnvs
+}
+
 // runCommand runs the command with it's arguments
 // Returns the exit code of the command and any error occured in the function
 func runCommand(originalGOPATH, cmdWorkdir string, wsConfig config.WorkspaceConfigModel, cmdName string, cmdArgs ...string) (int, error) {
@@ -166,7 +180,8 @@ func runCommand(originalGOPATH, cmdWorkdir string, wsConfig config.WorkspaceConf
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = cmdWorkdir
-	cmd.Env = append(os.Environ(), fmt.Sprintf("GOPATH=%s", wsConfig.WorkspaceRootPath))
+	cmd.Env = append(filteredEnvsList(os.Environ(), "GOPATH"), fmt.Sprintf("GOPATH=%s", wsConfig.WorkspaceRootPath))
+	log.Debugf("[RunCommand] Command Envs: %#v", cmd.Env)
 
 	cmdExitCode := 0
 	if err := cmd.Run(); err != nil {

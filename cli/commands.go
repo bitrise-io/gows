@@ -21,6 +21,11 @@ const (
 	VersionKey      = "version"
 	versionKeyShort = "v"
 
+	// -- For "run"
+
+	// SyncBackKey ...
+	SyncBackKey = "sync-back"
+
 	// --- Command flags
 
 	// InitResetKey ...
@@ -53,6 +58,10 @@ var (
 			Value:  "info",
 			Usage:  "Log level (options: debug, info, warn, error, fatal, panic).",
 			EnvVar: LogLevelEnvKey,
+		},
+		cli.BoolFlag{
+			Name:  SyncBackKey,
+			Usage: "Sync back when command finishes",
 		},
 	}
 )
