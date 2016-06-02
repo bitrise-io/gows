@@ -201,7 +201,15 @@ func runCommand(originalGOPATH, cmdWorkdir string, wsConfig config.WorkspaceConf
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Dir = cmdWorkdir
-	cmd.Env = append(filteredEnvsList(os.Environ(), "GOPATH"), fmt.Sprintf("GOPATH=%s", wsConfig.WorkspaceRootPath))
+	//
+	cmdEnvs := os.Environ()
+	cmdEnvs = filteredEnvsList(cmdEnvs, "GOPATH")
+	cmdEnvs = filteredEnvsList(cmdEnvs, "PWD")
+	cmdEnvs = append(cmdEnvs,
+		fmt.Sprintf("GOPATH=%s", wsConfig.WorkspaceRootPath),
+		fmt.Sprintf("PWD=%s", cmdWorkdir),
+	)
+	cmd.Env = cmdEnvs
 
 	cmdExitCode := 0
 	if err := cmd.Run(); err != nil {
