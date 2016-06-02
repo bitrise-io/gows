@@ -48,28 +48,39 @@ func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ..
 		return 0, fmt.Errorf("Failed to prepare the Workspace, error: %s", err)
 	}
 
-	// Sync project into workspace
-	log.Debugf("=> Sync project content into workspace: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
-	if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
-		return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
+	// --- RSYNC based solution
+	// // Sync project into workspace
+	// log.Debugf("=> Sync project content into workspace: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
+	// if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
+	// 	return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
+	// }
+	// log.Debugf(" [DONE] Sync project content into workspace")
+	// --- RSYNC based solution
+
+	// create symlink for Project->Workspace
+	log.Debugf("=> Creating Symlink: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
+	if err := createOrUpdateSymlink(currWorkDir, fullPackageWorkspacePath); err != nil {
+		return 0, fmt.Errorf("Failed to create Project->Workspace symlink, error: %s", err)
 	}
-	log.Debugf(" [DONE] Sync project content into workspace")
+	log.Debugf(" [DONE] Symlink is in place")
 
 	// Run the command, in the prepared Workspace
 	exitCode, cmdErr := runCommand(origGOPATH, fullPackageWorkspacePath, wsConfig, cmdName, cmdArgs...)
 
-	// Sync back from workspace into project
-	if isSyncBack {
-		log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
-		if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
-			// we should return the command's exit code and error (if any)
-			// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
-			// for now we'll just print an error log, but it won't change the "output" of this function
-			log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
-		} else {
-			log.Debugf(" [DONE] Sync back project content from workspace")
-		}
-	}
+	// --- RSYNC based solution
+	// // Sync back from workspace into project
+	// if isSyncBack {
+	// 	log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
+	// 	if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
+	// 		// we should return the command's exit code and error (if any)
+	// 		// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
+	// 		// for now we'll just print an error log, but it won't change the "output" of this function
+	// 		log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
+	// 	} else {
+	// 		log.Debugf(" [DONE] Sync back project content from workspace")
+	// 	}
+	// }
+	// --- RSYNC based solution
 
 	return exitCode, cmdErr
 }
@@ -99,6 +110,46 @@ func syncDirWithDir(syncContentOf, syncIntoDir string) error {
 	return nil
 }
 
+func createOrUpdateSymlink(symlinkTargetPath, symlinkLocationPath string) error {
+	fileInfo, isExists, err := pathutil.PathCheckAndInfos(symlinkLocationPath)
+	if err != nil {
+		return fmt.Errorf("Failed to check Symlink status (at: %s), error: %s", symlinkLocationPath, err)
+	}
+	isSymlinkAlreadyInPlace := false
+	if isExists && fileInfo.Mode()&os.ModeSymlink != 0 {
+		log.Debug(" Symlink already exists")
+		originPth, err := os.Readlink(symlinkLocationPath)
+		if err != nil {
+			return fmt.Errorf("Symlink found (at: %s), but failed to open: %s", symlinkLocationPath, err)
+		}
+
+		if originPth == symlinkTargetPath {
+			isSymlinkAlreadyInPlace = true
+		} else {
+			// remove
+			log.Warningf("Symlink already exists (at: %s), but target (%s) is not the current one (%s)", symlinkLocationPath, originPth, symlinkTargetPath)
+			log.Warning("Removing and re-creating the symlink ...")
+			if err := os.Remove(symlinkLocationPath); err != nil {
+				return fmt.Errorf("Failed to remove Symlink (at: %s), error: %s", symlinkLocationPath, err)
+			}
+		}
+	}
+
+	if !isSymlinkAlreadyInPlace {
+		log.Debug(" Creating symlink ...")
+		// create the parent directory
+		if err := os.MkdirAll(filepath.Dir(symlinkLocationPath), 0777); err != nil {
+			return fmt.Errorf("Failed to create base directory for symlink into: %s", symlinkLocationPath)
+		}
+		// create symlink
+		if err := os.Symlink(symlinkTargetPath, symlinkLocationPath); err != nil {
+			return fmt.Errorf("Failed to create symlink from project directory (%s) into gows Workspace directory (%s), error: %s", symlinkTargetPath, symlinkLocationPath, err)
+		}
+	}
+
+	return nil
+}
+
 func prepareGoWorkspaceEnvironment(origGOPATH, currWorkDir string, wsConfig config.WorkspaceConfigModel, projectConfig config.ProjectConfigModel) (string, error) {
 	if wsConfig.WorkspaceRootPath == "" {
 		return "", fmt.Errorf("No gows Workspace root path found for the current project / working directory: %s", currWorkDir)
@@ -118,40 +169,8 @@ func prepareGoWorkspaceEnvironment(origGOPATH, currWorkDir string, wsConfig conf
 	log.Debugf("=> Creating Symlink: (%s) -> (%s)", originalGopathBinPath, fullWorkspaceBinPath)
 
 	// create symlink for GOPATH/bin, if not yet created
-	fileInfo, isExists, err := pathutil.PathCheckAndInfos(fullWorkspaceBinPath)
-	if err != nil {
-		return "", fmt.Errorf("Failed to check Symlink status (at: %s), error: %s", fullWorkspaceBinPath, err)
-	}
-	isSymlinkAlreadyInPlace := false
-	if isExists && fileInfo.Mode()&os.ModeSymlink != 0 {
-		log.Debug(" Symlink already exists")
-		originPth, err := os.Readlink(fullWorkspaceBinPath)
-		if err != nil {
-			return "", fmt.Errorf("Symlink found (at: %s), but failed to open: %s", fullWorkspaceBinPath, err)
-		}
-
-		if originPth == originalGopathBinPath {
-			isSymlinkAlreadyInPlace = true
-		} else {
-			// remove
-			log.Warning("Symlink already exists (at: %s), but target (%s) is not the current one (%s)", fullWorkspaceBinPath, originPth, originalGopathBinPath)
-			log.Warning("Removing and re-creating the symlink ...")
-			if err := os.Remove(fullWorkspaceBinPath); err != nil {
-				return "", fmt.Errorf("Failed to remove Symlink (at: %s), error: %s", fullWorkspaceBinPath, err)
-			}
-		}
-	}
-
-	if !isSymlinkAlreadyInPlace {
-		log.Debug(" Creating symlink ...")
-		// create the parent directory
-		if err := os.MkdirAll(filepath.Dir(fullWorkspaceBinPath), 0777); err != nil {
-			return "", fmt.Errorf("Failed to create base directory for symlink into: %s", fullWorkspaceBinPath)
-		}
-		// create symlink
-		if err := os.Symlink(originalGopathBinPath, fullWorkspaceBinPath); err != nil {
-			return "", fmt.Errorf("Failed to create symlink from project directory (%s) into gows Workspace directory (%s), error: %s", originalGopathBinPath, fullWorkspaceBinPath, err)
-		}
+	if err := createOrUpdateSymlink(originalGopathBinPath, fullWorkspaceBinPath); err != nil {
+		return "", fmt.Errorf("Failed to create GOPATH/bin symlink, error: %s", err)
 	}
 
 	log.Debugf(" [DONE] Symlink is in place")
