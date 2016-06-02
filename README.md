@@ -44,16 +44,29 @@ go get -u github.com/bitrise-tools/gows
 ```
 
 That's all. If you have a "properly" configured Go environment (see the previous Install section)
-then you should be able to run `gows -version` now, to be able to run `gows` in any directory.
+then you should be able to run `gows -version` now, and be able to run `gows` in any directory.
 
 
 ## Usage
 
-Just prefix your commands (any command) with `gows`.
+Run `gows init` inside your Go project's directory (you only have to do this once).
+This will initialize the isolated
+Workspace for the project and create a `gows.yml` file in your
+project's directory.
+
+Once you initialized the workspace,
+just prefix your commands (any command) with `gows`.
 
 Example:
 
-Instead of `go get ./...` use `gows go get ./...`. That's all :)
+Instead of `go get ./...` use `gows go get ./...`,
+instead of `go install` use `gows go install`, etc.
+
+That's pretty much all :)
+
+If you'd want to clean up the workspace you can run `gows init -reset`
+in your project's directory, that'll delete and re-initialize the
+related workspace.
 
 
 ### Alternative usage option: jump into a prepared Shell
@@ -109,6 +122,64 @@ it's only required if you want to initialize
 the shell and jump into the initialized shell through `gows`. In general it's safe to initialize the
 environment variable this way even if you don't plan to initialize any shell through `gows`,
 as this will always initialize `GOPATH` *unless* it's already initialized (e.g. by an outer shell).
+
+
+## Technical Notes, how `gows` works behind the scenes
+
+When you call `gows init` in your project's directory (wherever it is),
+`gows` creates an empty Go Workspace for it in `~/.bitrise-gows/wsdirs/`,
+and registers your project's path in `~/.bitrise-gows/workspaces.yml`, so
+that the same workspace (inside `~/.bitrise-gows/wsdirs/`) can be assigned
+for it every time.
+
+When you run any `gows` command from your project's directory, `gows` will
+symlink the project directory into the related `~/.bitrise-gows/wsdirs/...`
+Workspace directory before running the command. Additionally `gows`
+will symlink your original `GOPATH/bin` into the workspace in
+`~/.bitrise-gows/wsdirs/...`, so that if you `go install` something that'll
+create the binary in your `GOPATH/bin`, not just inside the isolated Workspace.
+
+Once the symlinks are in place `gows` will also modify two environments,
+`GOPATH` and `PWD`, to point to the isolated workspace and the project path
+inside it.
+
+A step by step example about how the directory structure is built:
+
+```
+$ cd $GOPATH/src/github.com/bitrise-tools/gows
+
+$ ls -alh ~/.bitrise-gows/
+ls: ~/.bitrise-gows/: No such file or directory
+
+$ gows init
+...
+Successful init - gows is ready for use!
+
+$ tree -L 4 ~/.bitrise-gows/wsdirs/
+~/.bitrise-gows/wsdirs/
+└── gows-1464900642
+    └── src
+
+2 directories, 0 files
+
+$ ls -l1 ~/.bitrise-gows/
+workspaces.yml
+wsdirs
+
+# the first `gows` command you run creates the symlinks
+# inside the related workspace, in `~/.bitrise-gows/wsdirs/`
+$ gows pwd
+~/.bitrise-gows/wsdirs/gows-1464900642/src/github.com/bitrise-tools/gows
+
+$ tree -L 5 ~/.bitrise-gows/wsdirs/
+~/.bitrise-gows/wsdirs/
+└── gows-1464900642
+    ├── bin -> ~/develop/go/bin
+    └── src
+        └── github.com
+            └── bitrise-tools
+                └── gows -> ~/develop/go/src/github.com/bitrise-tools/gows
+```
 
 
 ## TODO
