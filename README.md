@@ -139,7 +139,7 @@ will symlink your original `GOPATH/bin` into the workspace in
 `~/.bitrise-gows/wsdirs/...`, so that if you `go install` something that'll
 create the binary in your `GOPATH/bin`, not just inside the isolated Workspace.
 
-Once the symlinks are in place `gows` will also modify two environments,
+Once the symlinks are in place `gows` will also set two environments for the command,
 `GOPATH` and `PWD`, to point to the isolated workspace and the project path
 inside it.
 
