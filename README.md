@@ -49,7 +49,7 @@ then you should be able to run `gows -version` now, and be able to run `gows` in
 
 ## Usage
 
-Run `gows init` inside your Go project's directory (you only have to do this once).
+Run `gows init` inside your Go project's directory (*you only have to do this once*).
 This will initialize the isolated
 Workspace for the project and create a `gows.yml` file in your
 project's directory.
