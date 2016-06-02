@@ -45,7 +45,6 @@ func Run() {
 
 	app.Action = func(c *cli.Context) error {
 		isSyncBack := c.Bool(SyncBackKey)
-		log.Debug("isSyncBack: ", isSyncBack)
 
 		cmdName := c.Args()[0]
 		cmdArgs := []string{}

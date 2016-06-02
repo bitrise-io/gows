@@ -17,6 +17,8 @@ import (
 // PrepareEnvironmentAndRunCommand ...
 // Returns the exit code of the command and any error occured in the function
 func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ...string) (int, error) {
+	log.Debug("[PrepareEnvironmentAndRunCommand] Sync-back mode? : ", isSyncBack)
+
 	gowsConfig, err := config.LoadGOWSConfigFromFile()
 	if err != nil {
 		return 0, fmt.Errorf("Failed to read gows configs: %s", err)
@@ -181,7 +183,6 @@ func runCommand(originalGOPATH, cmdWorkdir string, wsConfig config.WorkspaceConf
 	cmd.Stderr = os.Stderr
 	cmd.Dir = cmdWorkdir
 	cmd.Env = append(filteredEnvsList(os.Environ(), "GOPATH"), fmt.Sprintf("GOPATH=%s", wsConfig.WorkspaceRootPath))
-	log.Debugf("[RunCommand] Command Envs: %#v", cmd.Env)
 
 	cmdExitCode := 0
 	if err := cmd.Run(); err != nil {
