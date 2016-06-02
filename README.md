@@ -155,7 +155,7 @@ $ gows init
 ...
 Successful init - gows is ready for use!
 
-$ tree -L 4 ~/.bitrise-gows/wsdirs/
+$ tree -L 5 ~/.bitrise-gows/wsdirs/
 ~/.bitrise-gows/wsdirs/
 └── gows-1464900642
     └── src
