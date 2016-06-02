@@ -37,34 +37,6 @@ if you just added this line to the profile file).
 window, without the need to type in the full path of the binary.*
 
 
-**Allow GOPATH to be overwritten by `gows` for "shell jump in" (see the "Jump into a prepared Shell" section)**:
-To allow `gows` to overwrite the GOPATH for shells initialized **by/through** `gows` you should
-change your `GOPATH` entry in your `~/.bash_profile` / `~/.bashrc` (or wherever you did set GOPATH for your
-shell). For Bash (`~/.bash_profile` / `~/.bashrc`) you can use this form:
-
-Instead of:
-
-```
-export GOPATH="/my/go/path"
-```
-
-Use something like this:
-
-```
-if [ -z "$GOPATH" ] ; then
-  export GOPATH="/my/go/path"
-fi
-```
-
-This means that your (Bash) shell will only set the `GOPATH` environment if it's not set to a value already, if it's
-empty.
-
-This is not required if you use `gows` only in a "single command" style, it's only required if you want to initialize
-the shell and jump into the initialized shell through `gows`. In general it's safe to initialize the
-environment variable this way even if you don't plan to initialize any shell through `gows`,
-as this will always initialize `GOPATH` *unless* it's already initialized (e.g. by an outer shell).
-
-
 ### Install `gows`
 
 ```
@@ -77,34 +49,66 @@ then you should be able to run `gows -version` now, to be able to run `gows` in 
 
 ## Usage
 
-There are two ways to use `gows`, it's up to you to choose the one which
-fits your work style the most.
-
-
-### Jump into a prepared Shell
-
-To start a prepared Bash shell:
-
-```
-gows bash
-```
-
-To start a prepared Fish shell:
-
-```
-gows fish
-```
-
-To start a prepared ... You got the idea ;)
-
-
-### Single command / command prefix mode
-
 Just prefix your commands (any command) with `gows`.
 
 Example:
 
 Instead of `go get ./...` use `gows go get ./...`. That's all :)
+
+
+### Alternative usage option: jump into a prepared Shell
+
+*This solution works for most shells, but there are exceptions, like `fish`.
+The reason is: `gows` creates a symlink between your project and the isolated workspace.
+In Bash and most shells if you `cd` into a symlink directory (e.g. `cd my/symlink-dir`)
+your `pwd` will point to the symlink path (`.../my/symlink-dir`),
+but a few shells (`fish` for example) change the path to the symlink target path instead,
+which means that when `go` gets the current path that will point to your project's original
+path, instead of to the symlink inside the isolated workspace. Which, at that point,
+is outside of GOPATH.*
+
+In shells which keep the working directory path to point to the symlink's path, instead
+of it's target (e.g. Bash) you can run:
+
+```
+gows bash
+```
+
+or
+
+```
+gows bash -l
+```
+
+which will start a shell (in this example Bash) with prepared `GOPATH` and your
+working directory will be set to the symlink inside the isolated workspace.
+
+If you want to use this mode you'll have to change how you initialize
+your `GOPATH`, to allow it to be overwritten by `gows` for "shell jump in".
+To allow `gows` to overwrite the `GOPATH` for shells initialized **by/through** `gows` you should
+change your `GOPATH` init entry in your `~/.bash_profile` / `~/.bashrc` (or
+wherever you did set GOPATH for your shell).
+For Bash (`~/.bash_profile` / `~/.bashrc`) you can use this form:
+
+```
+if [ -z "$GOPATH" ] ; then
+  export GOPATH="/my/go/path"
+fi
+```
+
+instead of this one:
+
+```
+export GOPATH="/my/go/path"
+```
+
+This means that your (Bash) shell will only set the `GOPATH` environment if it's not set to a value already.
+
+This is not required if you use `gows` only in a "single command / prefix" style,
+it's only required if you want to initialize
+the shell and jump into the initialized shell through `gows`. In general it's safe to initialize the
+environment variable this way even if you don't plan to initialize any shell through `gows`,
+as this will always initialize `GOPATH` *unless* it's already initialized (e.g. by an outer shell).
 
 
 ## TODO
@@ -117,7 +121,6 @@ Instead of `go get ./...` use `gows go get ./...`. That's all :)
     - [ ] `go vet`
     - [ ] [errcheck](github.com/kisielk/errcheck)
     - [ ] [golint](github.com/golang/lint/golint)
-    - [ ] __WEB__ [safesql](github.com/stripe/safesql)
 - [ ] Write tests & base functionality, BDD/TDD preferred
 - [ ] Setup continuous integration (testing) on [bitrise.io](https://www.bitrise.io)
 - [ ] Setup continuous deployment for the project - just add it to the existing [bitrise.io](https://www.bitrise.io) config
