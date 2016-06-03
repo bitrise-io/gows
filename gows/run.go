@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-tools/gows/config"
 )
@@ -30,6 +31,7 @@ func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ..
 
 	wsConfig, isFound := gowsConfig.WorkspaceForProjectLocation(currWorkDir)
 	if !isFound {
+		log.Info("Run " + colorstring.Green("gows init") + " to initialize a workspace for this project")
 		return 0, fmt.Errorf("No Workspace configuration found for the current project / working directory: %s", currWorkDir)
 	}
 
