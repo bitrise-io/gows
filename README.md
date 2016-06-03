@@ -20,6 +20,12 @@ accordingly.
 
 ## Install
 
+### Requirements
+
+* `Go` with a prepared `$GOPATH`
+  * required for creating the `GOPATH/bin` symlink, to have shared `GOPATH/bin` between workspaces
+
+
 ### Install & Prepare Go
 
 Install & configure `Go` - [official guide](https://golang.org/doc/install).
@@ -184,8 +190,8 @@ $ tree -L 5 ~/.bitrise-gows/wsdirs/
 
 ## TODO
 
-- [ ] Setup the base code (generate the template project, e.g. create a new Xcode project or `rails new`)
-  - [ ] commit & push
+- [x] Setup the base code (generate the template project, e.g. create a new Xcode project or `rails new`)
+  - [x] commit & push
 - [ ] Add linter tools
   - go:
     - [ ] `go test`
@@ -197,3 +203,11 @@ $ tree -L 5 ~/.bitrise-gows/wsdirs/
 - [ ] Setup continuous deployment for the project - just add it to the existing [bitrise.io](https://www.bitrise.io) config
 - [ ] Use [releaseman](https://github.com/bitrise-tools/releaseman) to automate the release and CHANGELOG generation
 - [ ] Iterate on the project (and on the automation), test the automatic deployment
+
+- [ ] Add (r)sync mode as an option - as a workaround for "shell jump in" usage mode in Shells which don't work with the symlink based mode (e.g. `fish`)
+  - allow it to be specified in the `gows.yml`
+  - add commands: `sync-in` and `sync-back`, in case you want to sync with an already open shell (e.g. you changed the code in the Project dir),
+    and to be able to `sync-back` in case you missed to add the `-sync-back` flag to the original command
+- [ ] Option to disable `GOPATH/bin` symlinking. Once this 
+  - [ ] configurable in `gows.yml`
+  - [ ] it should be able to handle if the user changes the option - should remove the symlink / dir and create the dir / symlink instead 
