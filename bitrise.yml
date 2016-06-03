@@ -31,19 +31,23 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ex
-            go get github.com/stretchr/testify/require
-            go get golang.org/x/sys/unix
-            go get github.com/davecgh/go-spew/spew
-            go get github.com/pmezard/go-difflib/difflib
-  deps-save:
+            go get -u github.com/stretchr/testify/require
+            go get -u golang.org/x/sys/unix
+            go get -u github.com/davecgh/go-spew/spew
+            go get -u github.com/pmezard/go-difflib/difflib
+  deps-update:
     before_run:
+    - update_tools
     - deps-go_get
     steps:
     - script:
         inputs:
         - content: |-
             #!/bin/bash
-            set -ex
+            set -x
+            rm -rf Godeps
+            rm -rf vendor
+            set -e
             godep save ./...
 
   watch:
