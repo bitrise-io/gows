@@ -1,0 +1,66 @@
+{
+	"ImportPath": "github.com/bitrise-tools/gows",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.10.0-19-gf3cfb45",
+			"Rev": "f3cfb454f4c209e6668c95216c4744b8fddb2356"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/builtinutil",
+			"Rev": "3350ab0d82f7cf0c88a16b0365ff365d77507ea6"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/colorstring",
+			"Rev": "3350ab0d82f7cf0c88a16b0365ff365d77507ea6"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/fileutil",
+			"Rev": "3350ab0d82f7cf0c88a16b0365ff365d77507ea6"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/pathutil",
+			"Rev": "3350ab0d82f7cf0c88a16b0365ff365d77507ea6"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/testutil",
+			"Rev": "3350ab0d82f7cf0c88a16b0365ff365d77507ea6"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.1.3-18-g8d64eb7",
+			"Rev": "8d64eb7173c7753d6419fd4a9caf057398611364"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/require",
+			"Comment": "v1.1.3-18-g8d64eb7",
+			"Rev": "8d64eb7173c7753d6419fd4a9caf057398611364"
+		},
+		{
+			"ImportPath": "github.com/urfave/cli",
+			"Comment": "v1.17.0-57-gedb24d0",
+			"Rev": "edb24d02aa3cea2319c33f2836d4a5133907fe4c"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "076b546753157f758b316e59bcb51e6807c04057"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "a83829b6f1293c91addabc89d0571c246397bbf4"
+		}
+	]
+}
