@@ -50,6 +50,11 @@ var (
 				},
 			},
 		},
+		{
+			Name:   "workspaces",
+			Usage:  "List registered gows projects -> workspaces path pairs",
+			Action: listWorkspacesCmd,
+		},
 	}
 
 	appFlags = []cli.Flag{

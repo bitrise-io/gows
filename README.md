@@ -130,6 +130,19 @@ environment variable this way even if you don't plan to initialize any shell thr
 as this will always initialize `GOPATH` *unless* it's already initialized (e.g. by an outer shell).
 
 
+### `gows` commands
+
+*You can get the list of available commands by running: `gows --help`,
+and command specific help by running: `gows COMMAND --help`*
+
+* `gows version` : Print the version of `gows`, same as `gows --version`.
+* `gows init [--reset] [go-package-name]` : Initialize a workspace for the current directory.
+  * If called without a go-package-name parameter `gows` will try to determine the package name
+    from `git remote` (`git remote get-url origin`).
+  * For more help see: `gows init --help`.
+* `gows workspaces` : List registered gows projects -> workspaces path pairs
+
+
 ## Technical Notes, how `gows` works behind the scenes
 
 When you call `gows init` in your project's directory (wherever it is),
