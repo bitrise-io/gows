@@ -20,6 +20,12 @@ import (
 func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ...string) (int, error) {
 	log.Debug("[PrepareEnvironmentAndRunCommand] Sync-back mode? : ", isSyncBack)
 
+	projectConfig, err := config.LoadProjectConfigFromFile()
+	if err != nil {
+		log.Info("Run " + colorstring.Green("gows init") + " to initialize a workspace & gows config for this project")
+		return 0, fmt.Errorf("Failed to read Project Config: %s", err)
+	}
+
 	gowsConfig, err := config.LoadGOWSConfigFromFile()
 	if err != nil {
 		return 0, fmt.Errorf("Failed to read gows configs: %s", err)
@@ -31,13 +37,22 @@ func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ..
 
 	wsConfig, isFound := gowsConfig.WorkspaceForProjectLocation(currWorkDir)
 	if !isFound {
-		log.Info("Run " + colorstring.Green("gows init") + " to initialize a workspace for this project")
-		return 0, fmt.Errorf("No Workspace configuration found for the current project / working directory: %s", currWorkDir)
-	}
+		log.Debugln("No initialized workspace dir found for this project, initializing one ...")
+		if err := initWorkspaceForProjectPath(currWorkDir, false); err != nil {
+			return 0, fmt.Errorf("[PrepareEnvironmentAndRunCommand] Failed to initialize Workspace for Project: %s", err)
+		}
+		log.Debugln("[DONE] workspace dir initialized - continue running ...")
 
-	projectConfig, err := config.LoadProjectConfigFromFile()
-	if err != nil {
-		return 0, fmt.Errorf("Failed to read Project Config: %s", err)
+		// reload config
+		gowsConfig, err := config.LoadGOWSConfigFromFile()
+		if err != nil {
+			return 0, fmt.Errorf("Failed to read gows configs: %s", err)
+		}
+		wsConfig, isFound = gowsConfig.WorkspaceForProjectLocation(currWorkDir)
+	}
+	if !isFound {
+		log.Info("Run " + colorstring.Green("gows init") + " to initialize a workspace & gows config for this project")
+		return 0, fmt.Errorf("No Workspace configuration found for the current project / working directory: %s", currWorkDir)
 	}
 
 	origGOPATH := os.Getenv("GOPATH")

@@ -83,45 +83,29 @@ func initGoWorkspaceAtPath(wsRootPath string) error {
 	return nil
 }
 
-// Init ...
-func Init(packageName string, isAllowReset bool) error {
-	log.Debugf("[Init] Initializing package: %s", packageName)
+// initWorkspaceForProjectPath ...
+// Workspaces are linked to project paths, not to package IDs!
+// You can have multiple workspaces for the same package ID, but not for the
+// same (project) path.
+func initWorkspaceForProjectPath(projectPath string, isAllowReset bool) error {
+	log.Debug("[Init] Initializing Workspace & Config ...")
 
+	gowsWorspacesRootDirAbsPath, err := config.GOWSWorspacesRootDirAbsPath()
+	if err != nil {
+		return fmt.Errorf("Failed to get absolute path for gows workspaces root dir, error: %s", err)
+	}
+
+	// Create the Workspace
 	gowsConfig, err := config.LoadGOWSConfigFromFile()
 	if err != nil {
 		return fmt.Errorf("Failed to load gows config: %s", err)
 	}
 
-	log.Debug("[Init] Initializing Project Config ...")
-	{
-		projectConf := config.ProjectConfigModel{
-			PackageName: packageName,
-		}
-
-		if err := config.SaveProjectConfigToFile(projectConf); err != nil {
-			return fmt.Errorf("Failed to write Project Config into file: %s", err)
-		}
-	}
-
-	log.Debugf("[Init] Project Config saved to file: %s", config.ProjectConfigFilePath)
-
-	// Workspace Config
-	log.Debug("[Init] Initializing Workspace & Config ...")
-	// Create the Workspace
-	gowsWorspacesRootDirAbsPath, err := config.GOWSWorspacesRootDirAbsPath()
-	if err != nil {
-		return fmt.Errorf("Failed to get absolute path for gows workspaces root dir, error: %s", err)
-	}
-	currWorkDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("Failed to get current working directory: %s", err)
-	}
-
 	projectWorkspaceAbsPath := ""
-	wsConfig, isFound := gowsConfig.WorkspaceForProjectLocation(currWorkDir)
+	wsConfig, isFound := gowsConfig.WorkspaceForProjectLocation(projectPath)
 	if isFound {
 		if wsConfig.WorkspaceRootPath == "" {
-			return fmt.Errorf("A workspace is found for this project (path: %s), but the workspace root directory path is not defined!", currWorkDir)
+			return fmt.Errorf("A workspace is found for this project (path: %s), but the workspace root directory path is not defined!", projectPath)
 		}
 		projectWorkspaceAbsPath = wsConfig.WorkspaceRootPath
 
@@ -139,7 +123,7 @@ func Init(packageName string, isAllowReset bool) error {
 
 	if projectWorkspaceAbsPath == "" {
 		// generate one
-		projectBaseWorkspaceDirName := fmt.Sprintf("%s-%d", filepath.Base(currWorkDir), time.Now().Unix())
+		projectBaseWorkspaceDirName := fmt.Sprintf("%s-%d", filepath.Base(projectPath), time.Now().Unix())
 		projectWorkspaceAbsPath = filepath.Join(gowsWorspacesRootDirAbsPath, projectBaseWorkspaceDirName)
 	}
 
@@ -154,13 +138,43 @@ func Init(packageName string, isAllowReset bool) error {
 		workspaceConf := config.WorkspaceConfigModel{
 			WorkspaceRootPath: projectWorkspaceAbsPath,
 		}
-		gowsConfig.Workspaces[currWorkDir] = workspaceConf
+		gowsConfig.Workspaces[projectPath] = workspaceConf
 
 		if err := config.SaveGOWSConfigToFile(gowsConfig); err != nil {
 			return fmt.Errorf("Failed to save gows config: %s", err)
 		}
 	}
 	log.Debug("[Init] Workspace Config saved")
+
+	return nil
+}
+
+// Init ...
+func Init(packageName string, isAllowReset bool) error {
+	log.Debugf("[Init] Initializing package: %s", packageName)
+
+	log.Debug("[Init] Initializing Project Config ...")
+	{
+		projectConf := config.ProjectConfigModel{
+			PackageName: packageName,
+		}
+
+		if err := config.SaveProjectConfigToFile(projectConf); err != nil {
+			return fmt.Errorf("Failed to write Project Config into file: %s", err)
+		}
+	}
+
+	log.Debugf("[Init] Project Config saved to file: %s", config.ProjectConfigFilePath)
+
+	// init workspace for project (path)
+	currWorkDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("Failed to get current working directory: %s", err)
+	}
+
+	if err := initWorkspaceForProjectPath(currWorkDir, isAllowReset); err != nil {
+		return fmt.Errorf("Failed to initialize Workspace for Project: %s", err)
+	}
 
 	return nil
 }
