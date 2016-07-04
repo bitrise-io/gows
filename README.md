@@ -70,7 +70,7 @@ instead of `go install` use `gows go install`, etc.
 
 That's pretty much all :)
 
-If you'd want to clean up the workspace you can run `gows init -reset`
+If you'd want to clean up the workspace you can run `gows clear`
 in your project's directory, that'll delete and re-initialize the
 related workspace.
 
@@ -221,6 +221,6 @@ $ tree -L 5 ~/.bitrise-gows/wsdirs/
   - allow it to be specified in the `gows.yml`
   - add commands: `sync-in` and `sync-back`, in case you want to sync with an already open shell (e.g. you changed the code in the Project dir),
     and to be able to `sync-back` in case you missed to add the `-sync-back` flag to the original command
-- [ ] Option to disable `GOPATH/bin` symlinking. Once this 
+- [ ] Option to disable `GOPATH/bin` symlinking. Once this
   - [ ] configurable in `gows.yml`
-  - [ ] it should be able to handle if the user changes the option - should remove the symlink / dir and create the dir / symlink instead 
+  - [ ] it should be able to handle if the user changes the option - should remove the symlink / dir and create the dir / symlink instead
