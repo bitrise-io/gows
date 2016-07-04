@@ -55,6 +55,11 @@ var (
 			Usage:  "List registered gows projects -> workspaces path pairs",
 			Action: listWorkspacesCmd,
 		},
+		{
+			Name:   "clear",
+			Usage:  "Clear out the project's workspace",
+			Action: clearCmd,
+		},
 	}
 
 	appFlags = []cli.Flag{
