@@ -2,7 +2,7 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/bitrise-tools/gows/cli"
+	"github.com/bitrise-tools/gows/cmd"
 )
 
 func init() {
@@ -13,5 +13,5 @@ func init() {
 }
 
 func main() {
-	cli.Run()
+	cmd.Execute()
 }

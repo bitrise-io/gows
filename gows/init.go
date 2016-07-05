@@ -117,7 +117,7 @@ func initWorkspaceForProjectPath(projectPath string, isAllowReset bool) error {
 			projectWorkspaceAbsPath = ""
 		} else {
 			log.Warning(colorstring.Yellow("A workspace already exists for this project") + " (" + projectWorkspaceAbsPath + "), will be reused.")
-			log.Warning("If you want to delete the previous workspace of this project and generate a new one you should run: " + colorstring.Green("gows init -reset"))
+			log.Warning("If you want to delete the previous workspace of this project and generate a new one you should run: " + colorstring.Green("gows init --reset"))
 		}
 	}
 
