@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	isSyncBack   bool
 	loglevelFlag string
 )
 
@@ -74,7 +73,6 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().BoolVarP(&isSyncBack, "sync-back", "", false, "Sync back when command finishes")
 	RootCmd.PersistentFlags().StringVarP(&loglevelFlag, "loglevel", "l", "", `Log level (options: debug, info, warn, error, fatal, panic). [$LOGLEVEL]`)
 	RootCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -97,7 +95,7 @@ func init() {
 		if len(args) > 1 {
 			cmdArgs = args[1:]
 		}
-		exitCode, err := gows.PrepareEnvironmentAndRunCommand(isSyncBack, cmdName, cmdArgs...)
+		exitCode, err := gows.PrepareEnvironmentAndRunCommand(cmdName, cmdArgs...)
 		if exitCode != 0 {
 			os.Exit(exitCode)
 		}
