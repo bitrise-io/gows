@@ -30,11 +30,11 @@ var workspacesCmd = &cobra.Command{
 
 		fmt.Println()
 		fmt.Println("=== Registered gows [project -> workspace] path list ===")
-		for projectPath, wfConfig := range gowsConfig.Workspaces {
+		for projectPath, wsConfig := range gowsConfig.Workspaces {
 			if projectPath == currWorkDir {
-				fmt.Println(colorstring.Greenf(" * %s -> %s", projectPath, wfConfig.WorkspaceRootPath))
+				fmt.Println(colorstring.Greenf(" * %s -> %s", projectPath, wsConfig.WorkspaceRootPath))
 			} else {
-				fmt.Printf(" * %s -> %s\n", projectPath, wfConfig.WorkspaceRootPath)
+				fmt.Printf(" * %s -> %s\n", projectPath, wsConfig.WorkspaceRootPath)
 			}
 		}
 		fmt.Println("========================================================")
