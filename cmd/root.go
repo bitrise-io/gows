@@ -6,6 +6,7 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitrise-tools/gows/config"
 	"github.com/bitrise-tools/gows/gows"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
@@ -28,7 +29,10 @@ not just in a predefined $GOPATH workspace. gows will take care about crearing
 the (per-project isolated) workspace directory structure, no matter where your project is located.
 
 gows works perfectly with other Go tools, all it does is it ensures that every project
-gets it's own, isolated Go workspace and sets $GOPATH accordingly.`,
+gets it's own, isolated Go workspace and sets $GOPATH accordingly.
+
+Sync Mode can be set in the .gows.user.yml config file,
+or through the $GOWS_SYNC_MODE environment variable.`,
 
 	DisableFlagParsing: true,
 
@@ -37,7 +41,7 @@ gets it's own, isolated Go workspace and sets $GOPATH accordingly.`,
 
 		// Log level
 		if loglevelFlag == "" {
-			if loglevelEnv := os.Getenv("LOGLEVEL"); loglevelEnv != "" {
+			if loglevelEnv := os.Getenv("GOWS_LOGLEVEL"); loglevelEnv != "" {
 				loglevelFlag = loglevelEnv
 			} else {
 				// default
@@ -73,7 +77,7 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVarP(&loglevelFlag, "loglevel", "l", "", `Log level (options: debug, info, warn, error, fatal, panic). [$LOGLEVEL]`)
+	RootCmd.PersistentFlags().StringVarP(&loglevelFlag, "loglevel", "l", "", `Log level (options: debug, info, warn, error, fatal, panic). [$GOWS_LOGLEVEL]`)
 	RootCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("No command specified!")
@@ -95,7 +99,20 @@ func init() {
 		if len(args) > 1 {
 			cmdArgs = args[1:]
 		}
-		exitCode, err := gows.PrepareEnvironmentAndRunCommand(cmdName, cmdArgs...)
+
+		userConfig, err := config.LoadUserConfigFromFile()
+		if err != nil {
+			log.Debug("No User Config found, using defaults")
+			userConfig = config.CreateDefaultUserConfig()
+		}
+		forceSyncMode := os.Getenv("GOWS_SYNC_MODE")
+		if forceSyncMode != "" {
+			log.Debugf(" (i) Sync Mode specified as a parameter, using it (%s)", forceSyncMode)
+			userConfig.SyncMode = forceSyncMode
+		}
+		log.Debugf("User Config: %#v", userConfig)
+
+		exitCode, err := gows.PrepareEnvironmentAndRunCommand(userConfig, cmdName, cmdArgs...)
 		if exitCode != 0 {
 			os.Exit(exitCode)
 		}

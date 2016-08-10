@@ -23,7 +23,7 @@ const (
 
 // PrepareEnvironmentAndRunCommand ...
 // Returns the exit code of the command and any error occured in the function
-func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, error) {
+func PrepareEnvironmentAndRunCommand(userConfig config.UserConfigModel, cmdName string, cmdArgs ...string) (int, error) {
 	projectConfig, err := config.LoadProjectConfigFromFile()
 	if err != nil {
 		log.Info("Run " + colorstring.Green("gows init") + " to initialize a workspace & gows config for this project")
@@ -58,13 +58,6 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 		log.Info("Run " + colorstring.Green("gows init") + " to initialize a workspace & gows config for this project")
 		return 0, fmt.Errorf("No Workspace configuration found for the current project / working directory: %s", currWorkDir)
 	}
-
-	userConfig, err := config.LoadUserConfigFromFile()
-	if err != nil {
-		log.Debug("No User Config found, using defaults")
-		userConfig = config.CreateDefaultUserConfig()
-	}
-	log.Debugf("Using User Config: %#v", userConfig)
 
 	origGOPATH := os.Getenv("GOPATH")
 	if origGOPATH == "" {
