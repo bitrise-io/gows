@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitrise-io/go-utils/cmdex"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-tools/gows/config"
@@ -89,45 +90,72 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 	log.Debug("[PrepareEnvironmentAndRunCommand] specified Sync Mode : ", userConfigSyncMode)
 
 	// prepare
-	switch userConfigSyncMode {
-	case config.SyncModeSymlink:
-		// create symlink for Project->Workspace
-		log.Debugf("=> Creating Symlink: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
-		if err := createOrUpdateSymlink(currWorkDir, fullPackageWorkspacePath); err != nil {
-			return 0, fmt.Errorf("Failed to create Project->Workspace symlink, error: %s", err)
+	{
+		fullPackageWorkspacePathFileInfo, fullPackageWorkspaceIsExists, err := pathutil.PathCheckAndInfos(fullPackageWorkspacePath)
+		if err != nil {
+			return 0, fmt.Errorf("Failed to check Symlink status (at: %s), error: %s", fullPackageWorkspacePath, err)
 		}
-		log.Debugf(" [DONE] Symlink is in place")
-	case config.SyncModeCopy:
-		// Sync project into workspace
-		log.Debugf("=> Sync project content into workspace: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
-		if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
-			return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
+
+		switch userConfigSyncMode {
+		case config.SyncModeSymlink:
+			// create symlink for Project->Workspace
+			if fullPackageWorkspaceIsExists && fullPackageWorkspacePathFileInfo.Mode()&os.ModeSymlink == 0 {
+				// directory (non symlink) exists - remove it
+				log.Warningf("Directory exists (at: %s)", fullPackageWorkspacePath)
+				log.Warning("Removing it ...")
+				if err := os.RemoveAll(fullPackageWorkspacePath); err != nil {
+					return 0, fmt.Errorf("Failed to remove Directory (at: %s), error: %s", fullPackageWorkspacePath, err)
+				}
+			}
+
+			log.Debugf("=> Creating Symlink: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
+			if err := createOrUpdateSymlink(currWorkDir, fullPackageWorkspacePath); err != nil {
+				return 0, fmt.Errorf("Failed to create Project->Workspace symlink, error: %s", err)
+			}
+			log.Debugf(" [DONE] Symlink is in place")
+		case config.SyncModeCopy:
+			// Sync project into workspace
+			if fullPackageWorkspaceIsExists && fullPackageWorkspacePathFileInfo.Mode()&os.ModeSymlink != 0 {
+				// symlink exists - remove it
+				log.Warningf("Symlink exists (at: %s)", fullPackageWorkspacePath)
+				log.Warning("Removing it ...")
+				if err := os.Remove(fullPackageWorkspacePath); err != nil {
+					return 0, fmt.Errorf("Failed to remove Symlink (at: %s), error: %s", fullPackageWorkspacePath, err)
+				}
+			}
+
+			log.Debugf("=> Sync project content into workspace: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
+			if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
+				return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
+			}
+			log.Debugf(" [DONE] Sync project content into workspace")
+		default:
+			return 0, fmt.Errorf("Unsupported Sync Mode: %s", userConfigSyncMode)
 		}
-		log.Debugf(" [DONE] Sync project content into workspace")
-	default:
-		return 0, fmt.Errorf("Unsupported Sync Mode: %s", userConfigSyncMode)
 	}
 
 	// Run the command, in the prepared Workspace
 	exitCode, cmdErr := runCommand(origGOPATH, fullPackageWorkspacePath, wsConfig, cmdName, cmdArgs...)
 
 	// cleanup / finishing
-	switch userConfigSyncMode {
-	case config.SyncModeSymlink:
-		// nothing to do
-	case config.SyncModeCopy:
-		// Sync back from workspace into project
-		log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
-		if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
-			// we should return the command's exit code and error (if any)
-			// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
-			// for now we'll just print an error log, but it won't change the "output" of this function
-			log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
-		} else {
-			log.Debugf(" [DONE] Sync back project content from workspace")
+	{
+		switch userConfigSyncMode {
+		case config.SyncModeSymlink:
+			// nothing to do
+		case config.SyncModeCopy:
+			// Sync back from workspace into project
+			log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
+			if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
+				// we should return the command's exit code and error (if any)
+				// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
+				// for now we'll just print an error log, but it won't change the "output" of this function
+				log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
+			} else {
+				log.Debugf(" [DONE] Sync back project content from workspace")
+			}
+		default:
+			return 0, fmt.Errorf("Unsupported Sync Mode: %s", userConfigSyncMode)
 		}
-	default:
-		return 0, fmt.Errorf("Unsupported Sync Mode: %s", userConfigSyncMode)
 	}
 
 	return exitCode, cmdErr
@@ -144,6 +172,7 @@ func syncDirWithDir(syncContentOf, syncIntoDir string) error {
 	cmd := exec.Command("rsync", "-avhP", "--delete", syncContentOf+"/", syncIntoDir+"/")
 	cmd.Stdin = os.Stdin
 
+	log.Debugf("[syncDirWithDir] Running command: $ %s", cmdex.PrintableCommandArgs(false, cmd.Args))
 	out, err := cmd.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
