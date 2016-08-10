@@ -60,10 +60,11 @@ func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ..
 		log.Debug("No User Config found, using defaults")
 		userConfig = config.CreateDefaultUserConfig()
 	}
+	log.Debugf("Using User Config: %#v", userConfig)
 
 	origGOPATH := os.Getenv("GOPATH")
 	if origGOPATH == "" {
-		return 0, fmt.Errorf("You don't have a GOPATH environment - please set it, GOPATH/bin will be symlinked")
+		return 0, fmt.Errorf("You don't have a GOPATH environment - please set it; GOPATH/bin will be symlinked")
 	}
 
 	fullPackageWorkspacePath, err := prepareGoWorkspaceEnvironment(origGOPATH, currWorkDir, wsConfig, projectConfig)
