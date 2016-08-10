@@ -55,6 +55,12 @@ func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ..
 		return 0, fmt.Errorf("No Workspace configuration found for the current project / working directory: %s", currWorkDir)
 	}
 
+	userConfig, err := config.LoadUserConfigFromFile()
+	if err != nil {
+		log.Debug("No User Config found, using defaults")
+		userConfig = config.CreateDefaultUserConfig()
+	}
+
 	origGOPATH := os.Getenv("GOPATH")
 	if origGOPATH == "" {
 		return 0, fmt.Errorf("You don't have a GOPATH environment - please set it, GOPATH/bin will be symlinked")

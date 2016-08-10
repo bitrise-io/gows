@@ -17,8 +17,8 @@ const (
 	SyncModeSymlink = "symlink"
 	// SyncModeCopy ...
 	SyncModeCopy = "copy"
-	//
-	defaultSyncMode = SyncModeSymlink
+	// DefaultSyncMode ...
+	DefaultSyncMode = SyncModeSymlink
 )
 
 // UserConfigFileAbsPath ...
@@ -29,6 +29,13 @@ func UserConfigFileAbsPath() (string, error) {
 // UserConfigModel - stored in ./.gows.user.yml
 type UserConfigModel struct {
 	SyncMode string `json:"sync_mode" yaml:"sync_mode"`
+}
+
+// CreateDefaultUserConfig ...
+func CreateDefaultUserConfig() UserConfigModel {
+	return UserConfigModel{
+		SyncMode: DefaultSyncMode,
+	}
 }
 
 // LoadUserConfigFromFile ...

@@ -170,9 +170,7 @@ func Init(packageName string, isAllowReset bool) error {
 		if _, err := config.LoadUserConfigFromFile(); err == nil {
 			log.Infof("       [OK] User Config file already exists at %s - will not generate a new one", config.UserConfigFilePath)
 		} else {
-			userConf := config.UserConfigModel{
-				SyncMode: config.SyncModeSymlink,
-			}
+			userConf := config.CreateDefaultUserConfig()
 
 			if err := config.SaveUserConfigToFile(userConf); err != nil {
 				return fmt.Errorf("Failed to write User Config into file: %s", err)
