@@ -12,8 +12,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/cmdex"
 	"github.com/bitrise-io/go-utils/colorstring"
+	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-tools/gows/config"
+)
+
+const (
+	gowsCopyModeActiveFilePath = "./GOWS-COPY-MODE-ACTIVE"
 )
 
 // PrepareEnvironmentAndRunCommand ...
@@ -89,7 +94,7 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 	}
 	log.Debug("[PrepareEnvironmentAndRunCommand] specified Sync Mode : ", userConfigSyncMode)
 
-	// prepare
+	// --- prepare ---
 	{
 		fullPackageWorkspacePathFileInfo, fullPackageWorkspaceIsExists, err := pathutil.PathCheckAndInfos(fullPackageWorkspacePath)
 		if err != nil {
@@ -128,6 +133,9 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 			if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
 				return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
 			}
+			if err := writeGowsCopySyncActiveFileToPath(gowsCopyModeActiveFilePath, fullPackageWorkspacePath, currWorkDir); err != nil {
+				log.Warningf(" [!] Failed to write gows-copy-mode-active file to path: %s", gowsCopyModeActiveFilePath)
+			}
 			log.Debugf(" [DONE] Sync project content into workspace")
 		default:
 			return 0, fmt.Errorf("Unsupported Sync Mode: %s", userConfigSyncMode)
@@ -159,6 +167,20 @@ func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, er
 	}
 
 	return exitCode, cmdErr
+}
+
+func writeGowsCopySyncActiveFileToPath(pth, gowsWorkspacePath, originalProjectPath string) error {
+	gowsCopyModeActiveContent := fmt.Sprintf(`gows workspace is active at the path: %s
+
+Changes you do here (%s) WILL NOT SYNC, and WILL BE OVERWRITTEN by the changes done
+inside the workspace (at path: %s) when sync/the current command is finished!
+
+This file will be removed after the sync-back. After that it's safe to work
+in this directory again.
+`,
+		gowsWorkspacePath, originalProjectPath, gowsWorkspacePath)
+
+	return fileutil.WriteStringToFile(pth, gowsCopyModeActiveContent)
 }
 
 func syncDirWithDir(syncContentOf, syncIntoDir string) error {
