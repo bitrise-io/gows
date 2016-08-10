@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"os"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-tools/gows/gows"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
 
-var cfgFile string
-var isSyncBack bool
+var (
+	isSyncBack   bool
+	loglevelFlag string
+)
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -29,6 +32,36 @@ gows works perfectly with other Go tools, all it does is it ensures that every p
 gets it's own, isolated Go workspace and sets $GOPATH accordingly.`,
 
 	DisableFlagParsing: true,
+
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		initLogFormatter()
+
+		// Log level
+		if loglevelFlag == "" {
+			if loglevelEnv := os.Getenv("LOGLEVEL"); loglevelEnv != "" {
+				loglevelFlag = loglevelEnv
+			} else {
+				// default
+				loglevelFlag = "info"
+			}
+		}
+
+		level, err := log.ParseLevel(loglevelFlag)
+		if err != nil {
+			return err
+		}
+		log.SetLevel(level)
+
+		return nil
+	},
+}
+
+func initLogFormatter() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:   true,
+		ForceColors:     true,
+		TimestampFormat: "15:04:05",
+	})
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
@@ -42,6 +75,7 @@ func Execute() {
 
 func init() {
 	RootCmd.PersistentFlags().BoolVarP(&isSyncBack, "sync-back", "", false, "Sync back when command finishes")
+	RootCmd.PersistentFlags().StringVarP(&loglevelFlag, "loglevel", "l", "", `Log level (options: debug, info, warn, error, fatal, panic). [$LOGLEVEL]`)
 	RootCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("No command specified!")
