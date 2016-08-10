@@ -7,7 +7,6 @@ import (
 
 	"github.com/bitrise-tools/gows/gows"
 	"gopkg.in/viktorbenei/cobra.v0"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -42,7 +41,6 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
 	RootCmd.PersistentFlags().BoolVarP(&isSyncBack, "sync-back", "", false, "Sync back when command finishes")
 	RootCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -73,21 +71,5 @@ func init() {
 			return fmt.Errorf("Exit Code was 0, but an error happened: %s", err)
 		}
 		return nil
-	}
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" { // enable ability to specify config file via flag
-		viper.SetConfigFile(cfgFile)
-	}
-
-	viper.SetConfigName(".gows.user") // name of config file (without extension)
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }

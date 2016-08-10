@@ -151,9 +151,9 @@ func initWorkspaceForProjectPath(projectPath string, isAllowReset bool) error {
 
 // Init ...
 func Init(packageName string, isAllowReset bool) error {
-	log.Debugf("[Init] Initializing package: %s", packageName)
+	log.Infof("[Init] Initializing package: %s", packageName)
 
-	log.Debug("[Init] Initializing Project Config ...")
+	log.Info("[Init] Initializing Project Config ...")
 	{
 		projectConf := config.ProjectConfigModel{
 			PackageName: packageName,
@@ -162,9 +162,24 @@ func Init(packageName string, isAllowReset bool) error {
 		if err := config.SaveProjectConfigToFile(projectConf); err != nil {
 			return fmt.Errorf("Failed to write Project Config into file: %s", err)
 		}
+		log.Infof("       [OK] Project Config file saved to: %s", colorstring.Green(config.ProjectConfigFilePath))
 	}
 
-	log.Debugf("[Init] Project Config saved to file: %s", config.ProjectConfigFilePath)
+	log.Info("[Init] Initializing User Config ...")
+	{
+		if _, err := config.LoadUserConfigFromFile(); err == nil {
+			log.Infof("       [OK] User Config file already exists at %s - will not generate a new one", config.UserConfigFilePath)
+		} else {
+			userConf := config.UserConfigModel{
+				SyncMode: config.SyncModeSymlink,
+			}
+
+			if err := config.SaveUserConfigToFile(userConf); err != nil {
+				return fmt.Errorf("Failed to write User Config into file: %s", err)
+			}
+			log.Info("       [OK] User Config file saved as " + colorstring.Green(config.UserConfigFilePath) + " - " + colorstring.Yellow("please add it to your .gitignore file!"))
+		}
+	}
 
 	// init workspace for project (path)
 	currWorkDir, err := os.Getwd()
