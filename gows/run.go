@@ -17,9 +17,7 @@ import (
 
 // PrepareEnvironmentAndRunCommand ...
 // Returns the exit code of the command and any error occured in the function
-func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ...string) (int, error) {
-	log.Debug("[PrepareEnvironmentAndRunCommand] Sync-back mode? : ", isSyncBack)
-
+func PrepareEnvironmentAndRunCommand(cmdName string, cmdArgs ...string) (int, error) {
 	projectConfig, err := config.LoadProjectConfigFromFile()
 	if err != nil {
 		log.Info("Run " + colorstring.Green("gows init") + " to initialize a workspace & gows config for this project")
@@ -67,44 +65,70 @@ func PrepareEnvironmentAndRunCommand(isSyncBack bool, cmdName string, cmdArgs ..
 		return 0, fmt.Errorf("You don't have a GOPATH environment - please set it; GOPATH/bin will be symlinked")
 	}
 
-	fullPackageWorkspacePath, err := prepareGoWorkspaceEnvironment(origGOPATH, currWorkDir, wsConfig, projectConfig)
-	if err != nil {
-		return 0, fmt.Errorf("Failed to prepare the Workspace, error: %s", err)
+	if wsConfig.WorkspaceRootPath == "" {
+		return 0, fmt.Errorf("No gows Workspace root path found for the current project / working directory: %s", currWorkDir)
+	}
+	if projectConfig.PackageName == "" {
+		return 0, errors.New("No Package Name specified - make sure you initialized the workspace (with: gows init)")
 	}
 
-	// --- RSYNC based solution
-	// // Sync project into workspace
-	// log.Debugf("=> Sync project content into workspace: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
-	// if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
-	// 	return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
-	// }
-	// log.Debugf(" [DONE] Sync project content into workspace")
-	// --- RSYNC based solution
-
-	// create symlink for Project->Workspace
-	log.Debugf("=> Creating Symlink: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
-	if err := createOrUpdateSymlink(currWorkDir, fullPackageWorkspacePath); err != nil {
-		return 0, fmt.Errorf("Failed to create Project->Workspace symlink, error: %s", err)
+	if err := pathutil.EnsureDirExist(wsConfig.WorkspaceRootPath); err != nil {
+		return 0, fmt.Errorf("Failed to create workspace root directory (path: %s), error: %s", wsConfig.WorkspaceRootPath, err)
 	}
-	log.Debugf(" [DONE] Symlink is in place")
+
+	if err := createGopathBinSymlink(origGOPATH, wsConfig); err != nil {
+		return 0, fmt.Errorf("Failed to create GOPATH/bin symlink, error: %s", err)
+	}
+
+	fullPackageWorkspacePath := filepath.Join(wsConfig.WorkspaceRootPath, "src", projectConfig.PackageName)
+
+	userConfigSyncMode := userConfig.SyncMode
+	if userConfigSyncMode == "" {
+		userConfigSyncMode = config.DefaultSyncMode
+	}
+	log.Debug("[PrepareEnvironmentAndRunCommand] specified Sync Mode : ", userConfigSyncMode)
+
+	// prepare
+	switch userConfigSyncMode {
+	case config.SyncModeSymlink:
+		// create symlink for Project->Workspace
+		log.Debugf("=> Creating Symlink: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
+		if err := createOrUpdateSymlink(currWorkDir, fullPackageWorkspacePath); err != nil {
+			return 0, fmt.Errorf("Failed to create Project->Workspace symlink, error: %s", err)
+		}
+		log.Debugf(" [DONE] Symlink is in place")
+	case config.SyncModeCopy:
+		// Sync project into workspace
+		log.Debugf("=> Sync project content into workspace: (%s) -> (%s)", currWorkDir, fullPackageWorkspacePath)
+		if err := syncDirWithDir(currWorkDir, fullPackageWorkspacePath); err != nil {
+			return 0, fmt.Errorf("Failed to sync the project path / workdir into the Workspace, error: %s", err)
+		}
+		log.Debugf(" [DONE] Sync project content into workspace")
+	default:
+		return 0, fmt.Errorf("Unsupported Sync Mode: %s", userConfigSyncMode)
+	}
 
 	// Run the command, in the prepared Workspace
 	exitCode, cmdErr := runCommand(origGOPATH, fullPackageWorkspacePath, wsConfig, cmdName, cmdArgs...)
 
-	// --- RSYNC based solution
-	// // Sync back from workspace into project
-	// if isSyncBack {
-	// 	log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
-	// 	if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
-	// 		// we should return the command's exit code and error (if any)
-	// 		// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
-	// 		// for now we'll just print an error log, but it won't change the "output" of this function
-	// 		log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
-	// 	} else {
-	// 		log.Debugf(" [DONE] Sync back project content from workspace")
-	// 	}
-	// }
-	// --- RSYNC based solution
+	// cleanup / finishing
+	switch userConfigSyncMode {
+	case config.SyncModeSymlink:
+		// nothing to do
+	case config.SyncModeCopy:
+		// Sync back from workspace into project
+		log.Debugf("=> Sync workspace content into project: (%s) -> (%s)", fullPackageWorkspacePath, currWorkDir)
+		if err := syncDirWithDir(fullPackageWorkspacePath, currWorkDir); err != nil {
+			// we should return the command's exit code and error (if any)
+			// maybe if the exitCode==0 and cmdErr==nil only then we could return an error here ...
+			// for now we'll just print an error log, but it won't change the "output" of this function
+			log.Errorf("Failed to sync back the project content from the Workspace, error: %s", err)
+		} else {
+			log.Debugf(" [DONE] Sync back project content from workspace")
+		}
+	default:
+		return 0, fmt.Errorf("Unsupported Sync Mode: %s", userConfigSyncMode)
+	}
 
 	return exitCode, cmdErr
 }
@@ -174,32 +198,23 @@ func createOrUpdateSymlink(symlinkTargetPath, symlinkLocationPath string) error 
 	return nil
 }
 
-func prepareGoWorkspaceEnvironment(origGOPATH, currWorkDir string, wsConfig config.WorkspaceConfigModel, projectConfig config.ProjectConfigModel) (string, error) {
-	if wsConfig.WorkspaceRootPath == "" {
-		return "", fmt.Errorf("No gows Workspace root path found for the current project / working directory: %s", currWorkDir)
-	}
-	if projectConfig.PackageName == "" {
-		return "", errors.New("No Package Name specified - make sure you initialized the workspace (with: gows init)")
-	}
-
+func createGopathBinSymlink(origGOPATH string, wsConfig config.WorkspaceConfigModel) error {
 	fullWorkspaceBinPath := filepath.Join(wsConfig.WorkspaceRootPath, "bin")
 	originalGopathBinPath, err := pathutil.AbsPath(filepath.Join(origGOPATH, "bin"))
 	if err != nil {
-		return "", fmt.Errorf("Failed to get the path of 'bin' dir inside your GOPATH (%s), error: %s", origGOPATH, err)
+		return fmt.Errorf("Failed to get the path of 'bin' dir inside your GOPATH (%s), error: %s", origGOPATH, err)
 	}
-
-	fullPackageWorkspacePath := filepath.Join(wsConfig.WorkspaceRootPath, "src", projectConfig.PackageName)
 
 	log.Debugf("=> Creating Symlink: (%s) -> (%s)", originalGopathBinPath, fullWorkspaceBinPath)
 
 	// create symlink for GOPATH/bin, if not yet created
 	if err := createOrUpdateSymlink(originalGopathBinPath, fullWorkspaceBinPath); err != nil {
-		return "", fmt.Errorf("Failed to create GOPATH/bin symlink, error: %s", err)
+		return fmt.Errorf("Failed to create GOPATH/bin symlink, error: %s", err)
 	}
 
 	log.Debugf(" [DONE] Symlink is in place")
 
-	return fullPackageWorkspacePath, nil
+	return nil
 }
 
 func filteredEnvsList(envsList []string, ignoreEnv string) []string {
