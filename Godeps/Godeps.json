@@ -7,112 +7,54 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/BurntSushi/toml",
-			"Comment": "v0.2.0-9-gf0aeabc",
-			"Rev": "f0aeabca5a127c4078abb8c8d64298b147264b55"
-		},
-		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.10.0-19-gf3cfb45",
-			"Rev": "f3cfb454f4c209e6668c95216c4744b8fddb2356"
+			"Comment": "v0.10.0-28-ga283a10",
+			"Rev": "a283a10442df8dc09befd873fab202bf8a253d6a"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/go-utils/builtinutil",
-			"Rev": "bb4b7c4d5dbb58ede81badf80dd841e6e6e350fb"
+			"Rev": "e39da997ccc1f87874298cd0d723b1883f08184a"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/cmdex",
+			"Rev": "e39da997ccc1f87874298cd0d723b1883f08184a"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/go-utils/colorstring",
-			"Rev": "bb4b7c4d5dbb58ede81badf80dd841e6e6e350fb"
+			"Rev": "e39da997ccc1f87874298cd0d723b1883f08184a"
+		},
+		{
+			"ImportPath": "github.com/bitrise-io/go-utils/errorutil",
+			"Rev": "e39da997ccc1f87874298cd0d723b1883f08184a"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/go-utils/fileutil",
-			"Rev": "bb4b7c4d5dbb58ede81badf80dd841e6e6e350fb"
+			"Rev": "e39da997ccc1f87874298cd0d723b1883f08184a"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/go-utils/pathutil",
-			"Rev": "bb4b7c4d5dbb58ede81badf80dd841e6e6e350fb"
+			"Rev": "e39da997ccc1f87874298cd0d723b1883f08184a"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/go-utils/testutil",
-			"Rev": "bb4b7c4d5dbb58ede81badf80dd841e6e6e350fb"
+			"Rev": "e39da997ccc1f87874298cd0d723b1883f08184a"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
 		},
 		{
-			"ImportPath": "github.com/fsnotify/fsnotify",
-			"Comment": "v1.3.1",
-			"Rev": "a8a77c9133d2d6fd8334f3260d06f60e8d80a5fb"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/ast",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/parser",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/scanner",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/strconv",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/token",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/json/parser",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/json/scanner",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/json/token",
-			"Rev": "61f5143284c041681f76a5b63efcb232aaa94737"
-		},
-		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
 			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 		},
 		{
-			"ImportPath": "github.com/magiconair/properties",
-			"Comment": "v1.7.0",
-			"Rev": "c265cfa48dda6474e208715ca93e987829f572f8"
-		},
-		{
-			"ImportPath": "github.com/mitchellh/mapstructure",
-			"Rev": "d2dd0262208475919e1a362f675cfc0e7c10e905"
-		},
-		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Comment": "v1.0.0",
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
-			"ImportPath": "github.com/spf13/cast",
-			"Rev": "27b586b42e29bec072fe7379259cc719e1289da6"
-		},
-		{
-			"ImportPath": "github.com/spf13/jwalterweatherman",
-			"Rev": "33c24e77fb80341fe7130ee7c594256ff08ccc46"
-		},
-		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "367864438f1b1a3c7db4da06a2f55b144e6784e0"
-		},
-		{
-			"ImportPath": "github.com/spf13/viper",
-			"Rev": "c1ccc378a054ea8d4e38d8c67f6938d4760b53dd"
+			"Rev": "f676131e2660dc8cd88de99f7486d34aa8172635"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
@@ -126,7 +68,7 @@
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "a408501be4d17ee978c04a618e7a1b22af058c0e"
+			"Rev": "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
 		},
 		{
 			"ImportPath": "gopkg.in/viktorbenei/cobra.v0",
@@ -135,7 +77,7 @@
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"Rev": "a83829b6f1293c91addabc89d0571c246397bbf4"
+			"Rev": "e4d366fc3c7938e2958e662b4258c7a89e1f0e3e"
 		}
 	]
 }
