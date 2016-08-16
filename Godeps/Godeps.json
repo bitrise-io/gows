@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/bitrise-tools/gows",
-	"GoVersion": "go1.6",
+	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
@@ -8,8 +8,8 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.10.0-28-ga283a10",
-			"Rev": "a283a10442df8dc09befd873fab202bf8a253d6a"
+			"Comment": "v0.10.0-36-g08a8a7c",
+			"Rev": "08a8a7c27e3d058a8989316a850daad1c10bf4ab"
 		},
 		{
 			"ImportPath": "github.com/bitrise-io/go-utils/builtinutil",
@@ -54,7 +54,7 @@
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "f676131e2660dc8cd88de99f7486d34aa8172635"
+			"Rev": "01665e1eb3d0533dca0e5acffdff9eec1fcb886f"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
