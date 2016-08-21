@@ -1,10 +1,5 @@
-package gows
+package cmd
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-)
 
 func Test_parsePackageNameFromURL(t *testing.T) {
 	t.Log("No error - parse package name")

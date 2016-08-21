@@ -6,7 +6,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-tools/gows/config"
-	"github.com/bitrise-tools/gows/gows"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
 
@@ -26,7 +25,7 @@ var clearCmd = &cobra.Command{
 			return fmt.Errorf("Package Name is empty")
 		}
 
-		if err := gows.Init(projectConfig.PackageName, true); err != nil {
+		if err := InitGOWS(projectConfig.PackageName, true); err != nil {
 			return fmt.Errorf("Failed to initialize: %s", err)
 		}
 
