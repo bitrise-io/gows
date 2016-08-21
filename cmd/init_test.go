@@ -1,4 +1,4 @@
-package gows
+package cmd
 
 import (
 	"testing"

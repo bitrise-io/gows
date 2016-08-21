@@ -7,7 +7,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-tools/gows/config"
-	"github.com/bitrise-tools/gows/gows"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
 
@@ -112,7 +111,7 @@ func init() {
 		}
 		log.Debugf("User Config: %#v", userConfig)
 
-		exitCode, err := gows.PrepareEnvironmentAndRunCommand(userConfig, cmdName, cmdArgs...)
+		exitCode, err := PrepareEnvironmentAndRunCommand(userConfig, cmdName, cmdArgs...)
 		if exitCode != 0 {
 			os.Exit(exitCode)
 		}
