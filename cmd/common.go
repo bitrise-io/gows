@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
@@ -138,7 +137,7 @@ func PrepareEnvironmentAndRunCommand(userConfig config.UserConfigModel, cmdName 
 	}
 
 	// Run the command, in the prepared Workspace
-	exitCode, cmdErr := runCommand(origGOPATH, fullPackageWorkspacePath, wsConfig, cmdName, cmdArgs...)
+	exitCode, cmdErr := runCommand(fullPackageWorkspacePath, wsConfig, cmdName, cmdArgs...)
 
 	// cleanup / finishing
 	{
@@ -204,38 +203,14 @@ func syncDirWithDir(syncContentOf, syncIntoDir string) error {
 	return nil
 }
 
-func filteredEnvsList(envsList []string, ignoreEnv string) []string {
-	filteredEnvs := []string{}
-	for _, envItem := range envsList {
-		// an env item is a single string with the syntax: key=the value
-		if !strings.HasPrefix(envItem, fmt.Sprintf("%s=", ignoreEnv)) {
-			filteredEnvs = append(filteredEnvs, envItem)
-		}
-	}
-	return filteredEnvs
-}
-
 // runCommand runs the command with it's arguments
 // Returns the exit code of the command and any error occured in the function
-func runCommand(originalGOPATH, cmdWorkdir string, wsConfig config.WorkspaceConfigModel, cmdName string, cmdArgs ...string) (int, error) {
+func runCommand(cmdWorkdir string, wsConfig config.WorkspaceConfigModel, cmdName string, cmdArgs ...string) (int, error) {
 	log.Debugf("[RunCommand] Command Name: %s", cmdName)
 	log.Debugf("[RunCommand] Command Args: %#v", cmdArgs)
 	log.Debugf("[RunCommand] Command Work Dir: %#v", cmdWorkdir)
 
-	cmd := exec.Command(cmdName, cmdArgs...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Dir = cmdWorkdir
-	//
-	cmdEnvs := os.Environ()
-	cmdEnvs = filteredEnvsList(cmdEnvs, "GOPATH")
-	cmdEnvs = filteredEnvsList(cmdEnvs, "PWD")
-	cmdEnvs = append(cmdEnvs,
-		fmt.Sprintf("GOPATH=%s", wsConfig.WorkspaceRootPath),
-		fmt.Sprintf("PWD=%s", cmdWorkdir),
-	)
-	cmd.Env = cmdEnvs
+	cmd := gows.CreateCommand(cmdWorkdir, wsConfig.WorkspaceRootPath, cmdName, cmdArgs...)
 
 	cmdExitCode := 0
 	if err := cmd.Run(); err != nil {

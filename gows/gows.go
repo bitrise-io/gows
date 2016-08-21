@@ -3,7 +3,9 @@ package gows
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/pathutil"
@@ -68,4 +70,36 @@ func CreateOrUpdateSymlink(symlinkTargetPath, symlinkLocationPath string) error 
 	}
 
 	return nil
+}
+
+func filteredEnvsList(envsList []string, ignoreEnv string) []string {
+	filteredEnvs := []string{}
+	for _, envItem := range envsList {
+		// an env item is a single string with the syntax: key=the value
+		if !strings.HasPrefix(envItem, fmt.Sprintf("%s=", ignoreEnv)) {
+			filteredEnvs = append(filteredEnvs, envItem)
+		}
+	}
+	return filteredEnvs
+}
+
+// CreateCommand creates a command, prepared to run
+// in the isolated workspace environment.
+func CreateCommand(cmdWorkdir string, gopath string, cmdName string, cmdArgs ...string) *exec.Cmd {
+	cmd := exec.Command(cmdName, cmdArgs...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = cmdWorkdir
+	//
+	cmdEnvs := os.Environ()
+	cmdEnvs = filteredEnvsList(cmdEnvs, "GOPATH")
+	cmdEnvs = filteredEnvsList(cmdEnvs, "PWD")
+	cmdEnvs = append(cmdEnvs,
+		fmt.Sprintf("GOPATH=%s", gopath),
+		fmt.Sprintf("PWD=%s", cmdWorkdir),
+	)
+	cmd.Env = cmdEnvs
+
+	return cmd
 }
