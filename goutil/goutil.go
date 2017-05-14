@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-// ParsePackageNameFromURL ...
+// ParsePackageNameFromURL - returns a Go package name/id (e.g. github.com/bitrise-tools/gows)
+// from a git clone URL (e.g. https://github.com/bitrise-tools/gows.git)
 func ParsePackageNameFromURL(remoteURL string) (string, error) {
 	origRemoteURL := remoteURL
 	if strings.HasPrefix(remoteURL, "git@") {
