@@ -10,8 +10,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/bitrise-io/go-utils/cmdex"
 	"github.com/bitrise-io/go-utils/colorstring"
+	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-tools/gows/config"
@@ -188,7 +188,7 @@ func syncDirWithDir(syncContentOf, syncIntoDir string) error {
 	cmd := exec.Command("rsync", "-avhP", "--delete", syncContentOf+"/", syncIntoDir+"/")
 	cmd.Stdin = os.Stdin
 
-	log.Debugf("[syncDirWithDir] Running command: $ %s", cmdex.PrintableCommandArgs(false, cmd.Args))
+	log.Debugf("[syncDirWithDir] Running command: $ %s", command.NewWithCmd(cmd).PrintableCommandArgs())
 	out, err := cmd.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
