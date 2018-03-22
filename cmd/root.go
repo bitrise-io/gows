@@ -79,7 +79,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&loglevelFlag, "loglevel", "l", "", `Log level (options: debug, info, warn, error, fatal, panic). [$GOWS_LOGLEVEL]`)
 	RootCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return errors.New("No command specified!")
+			return errors.New("No command specified")
 		}
 		RootCmd.SilenceErrors = true
 		RootCmd.SilenceUsage = true
