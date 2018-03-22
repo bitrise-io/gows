@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
+
+	"github.com/pkg/errors"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bitrise-tools/gows/config"
@@ -89,7 +90,7 @@ func init() {
 		cmdName := args[0]
 		if cmdName == "-h" || cmdName == "--help" {
 			if err := RootCmd.Help(); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			return nil
 		}
