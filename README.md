@@ -50,7 +50,7 @@ go get -u github.com/bitrise-tools/gows
 ```
 
 That's all. If you have a "properly" configured Go environment (see the previous Install section)
-then you should be able to run `gows -version` now, and be able to run `gows` in any directory.
+then you should be able to run `gows version` now, and be able to run `gows` in any directory.
 
 
 ## Usage
@@ -135,7 +135,7 @@ as this will always initialize `GOPATH` *unless* it's already initialized (e.g. 
 *You can get the list of available commands by running: `gows --help`,
 and command specific help by running: `gows COMMAND --help`*
 
-* `gows version` : Print the version of `gows`, same as `gows --version`.
+* `gows version` : Print the version of `gows`.
 * `gows init [--reset] [go-package-name]` : Initialize a workspace for the current directory.
   * If called without a go-package-name parameter `gows` will try to determine the package name
     from `git remote` (`git remote get-url origin`).
