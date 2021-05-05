@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/colorstring"
-	"github.com/bitrise-tools/gows/config"
-	"github.com/bitrise-tools/gows/goutil"
+	"github.com/bitrise-io/gows/config"
+	"github.com/bitrise-io/gows/goutil"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
 

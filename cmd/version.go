@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/bitrise-tools/gows/version"
+	"github.com/bitrise-io/gows/version"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
 

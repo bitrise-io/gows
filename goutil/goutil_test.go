@@ -34,10 +34,9 @@ func TestParsePackageNameFromURL(t *testing.T) {
 	t.Log("Invalid remote URL - parse error")
 	{
 		testListMap := map[string]string{
-			"git@github.com:double:my_usr-name.here/repo-part_1.here.git": "More than one ':' found in the Host part of the URL (git@github.com:double:my_usr-name.here/repo-part_1.here.git)",
-			"my_usr-name/repo-part_1.here":                                "No Host found in URL (my_usr-name/repo-part_1.here)",
-			"https://github.com":                                          "No Path found in URL (https://github.com)",
-			"https://github.com/":                                         "No Path found in URL (https://github.com/)",
+			"my_usr-name/repo-part_1.here":                                "no Host found in URL (my_usr-name/repo-part_1.here)",
+			"https://github.com":                                          "no Path found in URL (https://github.com)",
+			"https://github.com/":                                         "no Path found in URL (https://github.com/)",
 		}
 
 		for k, v := range testListMap {

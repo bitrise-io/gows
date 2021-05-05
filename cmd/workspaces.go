@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/bitrise-io/go-utils/colorstring"
-	"github.com/bitrise-tools/gows/config"
+	"github.com/bitrise-io/gows/config"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
 
