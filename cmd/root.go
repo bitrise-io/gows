@@ -6,8 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/bitrise-tools/gows/config"
+	log "github.com/sirupsen/logrus"
+	"github.com/bitrise-io/gows/config"
 	"gopkg.in/viktorbenei/cobra.v0"
 )
 

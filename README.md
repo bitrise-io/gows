@@ -46,7 +46,7 @@ window, without the need to type in the full path of the binary.*
 ### Install `gows`
 
 ```
-go get -u github.com/bitrise-tools/gows
+go get -u github.com/bitrise-io/gows
 ```
 
 That's all. If you have a "properly" configured Go environment (see the previous Install section)
@@ -165,7 +165,7 @@ inside it.
 A step by step example about how the directory structure is built:
 
 ```
-$ cd $GOPATH/src/github.com/bitrise-tools/gows
+$ cd $GOPATH/src/github.com/bitrise-io/gows
 
 $ ls -alh ~/.bitrise-gows/
 ls: ~/.bitrise-gows/: No such file or directory
@@ -188,7 +188,7 @@ wsdirs
 # the first `gows` command you run creates the symlinks
 # inside the related workspace, in `~/.bitrise-gows/wsdirs/`
 $ gows pwd
-~/.bitrise-gows/wsdirs/gows-1464900642/src/github.com/bitrise-tools/gows
+~/.bitrise-gows/wsdirs/gows-1464900642/src/github.com/bitrise-io/gows
 
 $ tree -L 5 ~/.bitrise-gows/wsdirs/
 ~/.bitrise-gows/wsdirs/
@@ -196,8 +196,8 @@ $ tree -L 5 ~/.bitrise-gows/wsdirs/
     ├── bin -> ~/develop/go/bin
     └── src
         └── github.com
-            └── bitrise-tools
-                └── gows -> ~/develop/go/src/github.com/bitrise-tools/gows
+            └── bitrise-io
+                └── gows -> ~/develop/go/src/github.com/bitrise-io/gows
 ```
 
 
@@ -214,7 +214,7 @@ $ tree -L 5 ~/.bitrise-gows/wsdirs/
 - [ ] Write tests & base functionality, BDD/TDD preferred
 - [ ] Setup continuous integration (testing) on [bitrise.io](https://www.bitrise.io)
 - [ ] Setup continuous deployment for the project - just add it to the existing [bitrise.io](https://www.bitrise.io) config
-- [ ] Use [releaseman](https://github.com/bitrise-tools/releaseman) to automate the release and CHANGELOG generation
+- [ ] Use [releaseman](https://github.com/bitrise-io/releaseman) to automate the release and CHANGELOG generation
 - [ ] Iterate on the project (and on the automation), test the automatic deployment
 
 - [ ] Add (r)sync mode as an option - as a workaround for "shell jump in" usage mode in Shells which don't work with the symlink based mode (e.g. `fish`)

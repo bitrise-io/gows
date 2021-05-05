@@ -7,15 +7,15 @@ import (
 	"path/filepath"
 	"syscall"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/pkg/errors"
 
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
-	"github.com/bitrise-tools/gows/config"
-	"github.com/bitrise-tools/gows/gows"
+	"github.com/bitrise-io/gows/config"
+	"github.com/bitrise-io/gows/gows"
 )
 
 const (

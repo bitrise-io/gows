@@ -1,8 +1,8 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/bitrise-tools/gows/cmd"
+	"github.com/bitrise-io/gows/cmd"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
