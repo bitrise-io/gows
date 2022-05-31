@@ -46,7 +46,7 @@ window, without the need to type in the full path of the binary.*
 ### Install `gows`
 
 ```
-go get -u github.com/bitrise-io/gows
+go install github.com/bitrise-io/gows@latest
 ```
 
 That's all. If you have a "properly" configured Go environment (see the previous Install section)
