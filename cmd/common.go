@@ -5,17 +5,18 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"syscall"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/pkg/errors"
+	"github.com/bitrise-io/go-utils/v2/env"
 
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/pathutil"
+	v2command "github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/gows/config"
 	"github.com/bitrise-io/gows/gows"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -220,18 +221,21 @@ func runCommand(cmdWorkdir string, wsConfig config.WorkspaceConfigModel, cmdName
 	log.Debugf("[RunCommand] Command Args: %#v", cmdArgs)
 	log.Debugf("[RunCommand] Command Work Dir: %#v", cmdWorkdir)
 
-	cmd := gows.CreateCommand(cmdWorkdir, wsConfig.WorkspaceRootPath, cmdName, cmdArgs...)
+	envRepository := env.NewRepository()
+	cmdFactory := v2command.NewFactory(envRepository)
+	factory := gows.NewCommandFactory(cmdFactory, envRepository)
+	cmd := factory.Create(cmdName, cmdArgs, wsConfig.WorkspaceRootPath, cmdWorkdir, &gows.Opts{
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+		Stdin:  os.Stdin,
+	})
 
-	cmdExitCode := 0
 	if err := cmd.Run(); err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			waitStatus, ok := exitError.Sys().(syscall.WaitStatus)
-			if !ok {
-				return 0, errors.New("Failed to cast exit status")
-			}
-			cmdExitCode = waitStatus.ExitStatus()
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return exitErr.ExitCode(), err
 		}
-		return cmdExitCode, err
+		return 1, err
 	}
 
 	return 0, nil
