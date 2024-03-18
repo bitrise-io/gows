@@ -32,7 +32,7 @@ Install & configure `Go` - [official guide](https://golang.org/doc/install).
 
 Make sure you have `$GOPATH/bin` in your `$PATH`, e.g. by adding
 
-```
+```sh
 export PATH="$PATH:$GOPATH/bin"
 ```
 
@@ -45,7 +45,7 @@ window, without the need to type in the full path of the binary.*
 
 ### Install `gows`
 
-```
+```sh
 go install github.com/bitrise-io/gows@latest
 ```
 
@@ -89,13 +89,13 @@ is outside of GOPATH.*
 In shells which keep the working directory path to point to the symlink's path, instead
 of it's target (e.g. Bash) you can run:
 
-```
+```sh
 gows bash
 ```
 
 or
 
-```
+```sh
 gows bash -l
 ```
 
@@ -109,7 +109,7 @@ change your `GOPATH` init entry in your `~/.bash_profile` / `~/.bashrc` (or
 wherever you did set GOPATH for your shell).
 For Bash (`~/.bash_profile` / `~/.bashrc`) you can use this form:
 
-```
+```sh
 if [ -z "$GOPATH" ] ; then
   export GOPATH="/my/go/path"
 fi
@@ -117,7 +117,7 @@ fi
 
 instead of this one:
 
-```
+```sh
 export GOPATH="/my/go/path"
 ```
 
@@ -164,7 +164,7 @@ inside it.
 
 A step by step example about how the directory structure is built:
 
-```
+```sh
 $ cd $GOPATH/src/github.com/bitrise-io/gows
 
 $ ls -alh ~/.bitrise-gows/
